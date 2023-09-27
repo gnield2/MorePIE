@@ -1,4 +1,11 @@
+/***********************************************
+* This code was made from the inspiration of   *
+* emulator101.com. All tools are in the public *
+* domain.                                      *
+***********************************************/
+
 #include <stdio.h>
+#include <stdlib.h>
 
 int Disassemble6502p(unisgned char* buffer, int pc)
 {
