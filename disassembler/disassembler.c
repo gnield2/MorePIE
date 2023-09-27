@@ -144,20 +144,20 @@ int Disassemble6502p(unisgned char* buffer, int pc)
         case 0xb6:
             printf("LDX $NN,Y");
             break;
-        case 0xb8: // CLV	Implied	- - - - - V- 
-            printf("STY $NNNN");
+        case 0xb8:
+            printf("CLV");
             break;
-        case 0xb9: // LDA ($NN),Y	Indirect Indexed	- Z- - - - N
-            printf("STY $NNNN");
+        case 0xb9:
+            printf("LDA ($NN),Y");
             break;
-        case 0xba: // TSX	Implied	- Z- - - - N
-            printf("STY $NNNN");
+        case 0xba:
+            printf("TSX");
             break;
-        case 0xbc: // LDY $NNNN,X	Absolute,X	- Z- - - - N
-            printf("STY $NNNN");
+        case 0xbc:
+            printf("LDY $NNNN,X");
             break;
-        case 0xbd: // LDA $NNNN,X	Absolute,X	- Z- - - - N
-            printf("STY $NNNN");
+        case 0xbd:
+            printf("LDA $NNNN,X");
             break;
         /* Raul does opcode $be to opcode $fe */
     }
