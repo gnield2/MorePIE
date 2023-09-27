@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int Disassemble6502p(unisgned char* buffer, int pc)
+int Disassemble6502p(unsigned char* buffer, int pc)
 {
     unsigned char* code = &buffer[pc];
     int opbytes = 1;
@@ -167,7 +167,9 @@ int Disassemble6502p(unisgned char* buffer, int pc)
             printf("LDA $NNNN,X");
             break;
         /* Raul does opcode $be to opcode $fe */
+
     }
+    return opbytes;
 }
 
 int main(int argc, char* argv[])
