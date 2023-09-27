@@ -48,79 +48,116 @@ int Disassemble6502p(unisgned char* buffer, int pc)
         /* Jacob does opcode $41 to opcode $85 */
 
         /* Jeriah does opcode $86 to opcode $bd */
-        case 0x86: // STX $NN	Zero Page	- - - - - - -
+        case 0x86:
+            printf("STY $NNNN");
             break;
-        case 0x88: // DEY	Implied	- Z- - - - N
+        case 0x88:
+            printf("DEY");
             break;
-        case 0x8a: // TXA	Implied	- Z- - - - N
+        case 0x8a:
+            printf("TXA");
             break;
-        case 0x8c: // STY $NNNN	Absolute	- - - - - - -
+        case 0x8c:
+            printf("STY $NNNN");
             break;
-        case 0x8d: // STA $NNNN	Absolute	- - - - - - -
+        case 0x8d: 
+            printf("STA $NNNN");
             break;
-        case 0x8e: // STX $NNNN	Absolute	- - - - - - -
+        case 0x8e:
+            printf("STX $NNNN");
             break;
-        case 0x90: // BCC $NN	Relative	- - - - - - -
+        case 0x90:
+            printf("BCC $NN");
             break;
-        case 0x91: // STA ($NN),Y	Indirect Indexed	- - - - - - -
+        case 0x91:
+            printf("STA ($NN),Y");
             break;
-        case 0x94: // STY $NN,X	Zero Page,X	- - - - - - -
+        case 0x94:
+            printf("STY $NN,X");
             break;
-        case 0x95: // STA $NN,X	Zero Page,X	- - - - - - -
+        case 0x95:
+            printf("STA $NN,X");
             break;
-        case 0x96: // STX $NN, Y	Zero Page, Y - ------
+        case 0x96:
+            printf("STX $NN, Y");
             break;
-        case 0x98: // TYA	Implied	- Z- - - - N
+        case 0x98:
+            printf("TYA");
             break;
-        case 0x99: // STA $NNNN,Y	Absolute,Y	- - - - - - -
+        case 0x99:
+            printf("STA $NNNN,Y");
             break;
-        case 0x9a: // TXS	Implied	- - - - - - -
+        case 0x9a:
+            printf("TXS");
             break;
-        case 0x9d: // STA $NNNN,X	Absolute,X	- - - - - - -
+        case 0x9d:
+            printf("STA $NNNN,X");
             break;
-        case 0xa0: // LDY #$NN	Immediate	- Z- - - - N
+        case 0xa0:
+            printf("LDY #$NN");
             break;
-        case 0xa1: // LDA ($NN,X)	Indexed Indirect	- Z- - - - N
+        case 0xa1:
+            printf("LDA ($NN,X)");
             break;
-        case 0xa2: // LDX #$NN	Immediate	- Z- - - - N
+        case 0xa2:
+            printf("LDX #$NN");
             break;
-        case 0xa4: // LDY $NN	Zero Page	- Z- - - - N
+        case 0xa4:
+            printf("LDY $NN");
             break;
-        case 0xa5: // LDA $NN	Zero Page	- Z- - - - N
+        case 0xa5:
+            printf("LDA $NN");
             break;
-        case 0xa6: // LDX $NN	Zero Page	- Z- - - - N
+        case 0xa6:
+            printf("LDX $NN");
             break;
-        case 0xa8: // TAY	Implied	- Z- - - - N
+        case 0xa8:
+            printf("TAY");
             break;
-        case 0xa9: // LDA #$NN	Immediate	- Z- - - - N
+        case 0xa9:
+            printf("LDA $NN");
             break;
-        case 0xaa: // TAX	Implied	- Z- - - - N
+        case 0xaa:
+            printf("TAX");
             break;
-        case 0xac: // LDY $NNNN	Absolute	- Z- - - - N
+        case 0xac:
+            printf("LDY $NNNN");
             break;
-        case 0xad: // LDA $NNNN	Absolute	- Z- - - - N
+        case 0xad:
+            printf("LDA $NNNN");
             break;
-        case 0xae: // LDX $NNNN	Absolute	- Z- - - - N
+        case 0xae:
+            printf("LDX $NNNN");
             break;
-        case 0xb0: // BCS $NN	Relative	- - - - - - - 
+        case 0xb0:
+            printf("BCS $NN");
             break;
-        case 0xb1: // LDA ($NN),Y	Indirect Indexed	- Z- - - - N
+        case 0xb1:
+            printf("LDA ($NN),Y");
             break;
-        case 0xb4: // LDY $NN,X	Zero Page,X	- Z- - - - N
+        case 0xb4:
+            printf("LDY $NN,X");
             break;
-        case 0xb5: // LDA $NN,X	Zero Page,X	- Z- - - - N
+        case 0xb5:
+            printf("LDA $NN,X");
             break;
-        case 0xb6: // LDX $NN,Y	Zero Page,Y	- Z- - - - N
+        case 0xb6:
+            printf("LDX $NN,Y");
             break;
         case 0xb8: // CLV	Implied	- - - - - V- 
+            printf("STY $NNNN");
             break;
         case 0xb9: // LDA ($NN),Y	Indirect Indexed	- Z- - - - N
+            printf("STY $NNNN");
             break;
         case 0xba: // TSX	Implied	- Z- - - - N
+            printf("STY $NNNN");
             break;
         case 0xbc: // LDY $NNNN,X	Absolute,X	- Z- - - - N
+            printf("STY $NNNN");
             break;
         case 0xbd: // LDA $NNNN,X	Absolute,X	- Z- - - - N
+            printf("STY $NNNN");
             break;
         /* Raul does opcode $be to opcode $fe */
     }
