@@ -338,121 +338,154 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             break;
         /* Raul does opcode $be to opcode $fe */
 		case 0xbe:	
-			printf("LDX $NNNN,Y"); 
+			printf("LDX $%02x%02x,Y", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xc0:	
-			printf("CPY #$NN");
+			printf("CPY #$%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xc1:	
-			printf("CMP ($NN,X)");
+			printf("CMP ($%02x,X)", code[1]);
+			opbytes = 2;
 			break;
 		case 0xc4:	
-			printf("CPY $NN");
+			printf("CPY $%02x", code[1]);
+			opbytes = 2
 			break;
 		case 0xc5:	
-			printf("CMP $NN");
+			printf("CMP $%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xc6:	
-			printf("DEC $NN");
+			printf("DEC $%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xc8:	
 			printf("INY");
 			break;
 		case 0xc9:	
-			printf("CMP #$NN");
+			printf("CMP #$%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xca:	
 			printf("DEX");
 			break;
 		case 0xcc:	
-			printf("CPY $NNNN");
+			printf("CPY $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xcd:
-			printf("CMP $NNNN");
+			printf("CMP $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xce:
-			printf("DEC $NNNN");
+			printf("DEC $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xd0:
-			printf("BNE $NN");
+			printf("BNE $%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xd1:
-			printf("CMP ($NN),Y");
+			printf("CMP ($%02x),Y", code[1]);
+			opbytes = 2;
 			break;
 		case 0xd5:
-			printf("CMP $NN,X");
+			printf("CMP $%02x,X", code[1]);
+			opbytes = 2;
 			break;
 		case 0xd6:
-			printf("DEC $NN,X");
+			printf("DEC $%02x,X", code[1]);
+			opbytes = 2;
 			break;
 		case 0xd8:
 			printf("CLD");
 			break;
 		case 0xd9:
-			printf("CMP $NNNN,Y");
+			printf("CMP $%02x%02x,Y", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xdd:	
-			printf("CMP $NNNN,X");
+			printf("CMP $%02x%02x,X", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xde:	
-			printf("DEC $NNNN,X");
+			printf("DEC $%02x%02x,X", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xe0:	
-			printf("CPX #$NN");
+			printf("CPX #$%02x");
+			opbytes = 2;
 			break;
 		case 0xe1:
-			printf("SBC ($NN,X)");
+			printf("SBC ($%02x,X)");
+			opbytes = 2;
 			break;
 		case 0xe4:
-			printf("CPX $NN");
+			printf("CPX $%02x");
+			opbytes = 2;
 			break;
 		case 0xe5:	
-			printf("SBC $NN");
+			printf("SBC $%02x");
+			opbytes = 2;
 			break;
 		case 0xe6:	
-			printf("INC $NN");
+			printf("INC $%02x");
+			opbytes = 2;
 			break;
 		case 0xe8:
 			printf("INX");
 			break;
 		case 0xe9:
-			printf("SBC #$NN");
+			printf("SBC #$%02x");
+			opbytes = 2;
 			break;
 		case 0xea:
 			printf("NOP"); 
 			break;
 		case 0xec:
-			printf("CPX $NNNN");
+			printf("CPX $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xed:
-			printf("SBC $NNNN");
+			printf("SBC $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xee:
-			printf("INC $NNNN");
+			printf("INC $%02x%02x", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xf0:
-			printf("BEQ $NN");
+			printf("BEQ $%02x", code[1]);
+			opbytes = 2;
 			break;
 		case 0xf1:
-			printf("SBC ($NN),Y");
+			printf("SBC ($%02x),Y", code[1]);
+			opbytes = 2;
 			break;
 		case 0xf5:
-			printf("SBC $NN,X");
+			printf("SBC $%02x,X", code[1]);
+			opbytes = 2;
 			break;
 		case 0xf6:
-			printf("INC $NN,X");
+			printf("INC $%02x,X", code[1]);
+			opbytes = 2;
 			break;
 		case 0xf8:
 			printf("SED");
 			break;
 		case 0xf9:
-			printf("SBC $NNNN,Y");
+			printf("SBC $%02x%02x,Y", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xfd:
-			printf("SBC $NNNN,X");
+			printf("SBC $%02x%02x,X", code[2], code[1]);
+			opbytes = 3;
 			break;
 		case 0xfe:
-			printf("INC $NNNN, X");
+			printf("INC $%02x%02x, X", code[2], code[1]);
+			opbytes = 3;
 			break;
 
 
