@@ -15,43 +15,146 @@ int Disassemble6502p(unsigned char* buffer, int pc)
     switch (*code)
     {
         /* Gabe does opcode $00 to opcode $40 */
-        case 0x00: printf("BRK"); break;
-        case 0x01: printf("ORA ($NN X)");   break;
-        case 0x05: printf("ORA $NN");       break;
-        case 0x06: printf("ASL $NN");       break;
-        case 0x08: printf("PHP");           break;
-        case 0x09: printf("ORA #$NN");      break;
-        case 0x0a: printf("ASL A");         break;
-        case 0x0d: printf("ORA $NNNN");     break;
-        case 0x0e: printf("ASL $NNNN");     break;
-        case 0x10: printf("BPL $NN");       break;
-        case 0x11: printf("ORA ($NN) Y");   break;
-        case 0x15: printf("ORA $NN X");     break;
-        case 0x16: printf("ASL $NN X");     break;
-        case 0x18: printf("CLC");           break;
-        case 0x19: printf("ORA $NNNN Y");   break;
-        case 0x1d: printf("ORA $NNNN X");   break;
-        case 0x1e: printf("ASL $NNNN X");   break;
-        case 0x20: printf("JSR $NNNN");     break;
-        case 0x21: printf("AND ($NN X)");   break;
-        case 0x24: printf("BIT $NN");       break;
-        case 0x25: printf("AND $NN");       break;
-        case 0x26: printf("ROL $NN");       break;
-        case 0x28: printf("PLP");           break;
-        case 0x29: printf("AND #$NN");      break;
-        case 0x2a: printf("ROL A");         break;
-        case 0x2c: printf("BIT $NNNN");     break;
-        case 0x2d: printf("AND $NNNN");     break;
-        case 0x2e: printf("ROL $NNNN");     break;
-        case 0x30: printf("BMI $NN");       break;
-        case 0x31: printf("AND ($NN) Y");   break;
-        case 0x35: printf("AND $NN X");     break;
-        case 0x36: printf("ROL $NN X");     break;
-        case 0x38: printf("SEC");           break;
-        case 0x39: printf("AND $NNNN Y");   break;
-        case 0x3d: printf("AND $NNNN X");   break;
-        case 0x3e: printf("ROL $NNNN X");   break;
-        case 0x40: printf("RTI");           break;
+        case 0x00: 
+            printf("BRK"); 
+            break;
+        case 0x01: 
+            printf("ORA ($%02x,X)", code[1]);   
+            opbytes = 2;
+            break;
+        case 0x05: 
+            printf("ORA $%02x", code[1]);
+            opbytes = 2;
+            break;
+        case 0x06: 
+            printf("ASL $%02x", code[1]);     
+            opbytes = 2;
+            break;
+        case 0x08: 
+            printf("PHP"); 
+            break;
+        case 0x09: 
+            printf("ORA #$%02x", code[1]);
+            opbytes = 2;
+            break;
+        case 0x0a: 
+            printf("ASL A");
+            break;
+        case 0x0d: 
+            printf("ORA $%02x%02x", code[2], code[1]);   
+            opbytes = 3;
+            break;
+        case 0x0e: 
+            printf("ASL $%02x%02x", code[2], code[1]);   
+            opbytes = 3;
+            break;
+        case 0x10: 
+            printf("BPL $%02x", code[1]);     
+            opbytes = 2;
+            break;
+        case 0x11: 
+            printf("ORA ($%02x),Y", code[1]);
+            opbytes = 2;
+            break;
+        case 0x15: 
+            printf("ORA $%02x,X", code[1]); 
+            opbytes = 2;
+            break;
+        case 0x16: 
+            printf("ASL $%02x,X", code[1]); 
+            opbytes = 2;
+            break;
+        case 0x18: 
+            printf("CLC");      
+            break;
+        case 0x19: 
+            printf("ORA $%02x%02x,Y", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x1d: 
+            printf("ORA $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x1e: 
+            printf("ASL $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x20: 
+            printf("JSR $%02x%02x", code[2], code[1]); 
+            opbytes = 3;
+            break;
+        case 0x21: 
+            printf("AND ($%02x,X)", code[1]); 
+            opbytes = 2;
+            break;
+        case 0x24: 
+            printf("BIT $02x", code[1]);    
+            opbytes = 2;
+            break;
+        case 0x25: 
+            printf("AND $%02x", code[1]); 
+            opbytes = 2;
+            break;
+        case 0x26: 
+            printf("ROL $%02x", code[1]);  
+            opbytes = 2;
+            break;
+        case 0x28: 
+            printf("PLP");    
+            break;
+        case 0x29: 
+            printf("AND #$02x", code[1]);
+            opbytes = 2;
+            break;
+        case 0x2a: 
+            printf("ROL A");
+            break;
+        case 0x2c: 
+            printf("BIT $%02x%02x", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x2d:
+            printf("AND $%02x%02x", code[2], code[1]);  
+            opbytes = 3;
+            break;
+        case 0x2e: 
+            printf("ROL $%02x%02x", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x30: 
+            printf("BMI $%02x", code[1]);   
+            opbytes = 2;
+            break;
+        case 0x31: 
+            printf("AND ($%02x),Y", code[1]);  
+            opbytes = 2;
+            break;
+        case 0x35: 
+            printf("AND $%02x,X", code[1]);
+            opbytes = 2;
+            break;
+        case 0x36: 
+            printf("ROL $%02x X", code[1]); 
+            opbytes = 2;
+            break;
+        case 0x38: 
+            printf("SEC");
+            break;
+        case 0x39: 
+            printf("AND $%02x%02x,Y", code[2], code[1]); 
+            opbytes = 3;
+            break;
+        case 0x3d: 
+            printf("AND $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x3e: 
+            printf("ROL $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
+            break;
+        case 0x40: 
+            printf("RTI");    
+            break;
         /* Jacob does opcode $41 to opcode $85 */
         case 0x41: printf("EOR($NN,X)");    break;
         case 0x45: printf("EOR $NN");       break;
@@ -354,6 +457,8 @@ int Disassemble6502p(unsigned char* buffer, int pc)
 
 
     }
+
+    printf("\n");
     return opbytes;
 }
 
