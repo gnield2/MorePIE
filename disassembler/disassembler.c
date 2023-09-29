@@ -94,7 +94,8 @@ int Disassemble6502p(unsigned char* buffer, int pc)
 
         /* Jeriah does opcode $86 to opcode $bd */
         case 0x86:
-            printf("STY $NNNN");
+            printf("STY $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0x88:
             printf("DEY");
@@ -103,106 +104,134 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             printf("TXA");
             break;
         case 0x8c:
-            printf("STY $NNNN");
+            printf("STY $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0x8d: 
-            printf("STA $NNNN");
+            printf("STA $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0x8e:
-            printf("STX $NNNN");
+            printf("STX $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0x90:
-            printf("BCC $NN");
+            printf("BCC %02x", code[1]);
+            opbytes = 2;
             break;
         case 0x91:
-            printf("STA ($NN),Y");
+            printf("STA ($%02x),Y", code[1]);
+            opbytes = 2;
             break;
         case 0x94:
-            printf("STY $NN,X");
+            printf("STY $%02x,X", code[1]);
+            opbytes = 2;
             break;
         case 0x95:
-            printf("STA $NN,X");
+            printf("STA $%02x,X", code[1]);
+            opbytes = 2;
             break;
         case 0x96:
-            printf("STX $NN, Y");
+            printf("STX $%02x, Y", code[1]);
+            opbytes = 2;
             break;
         case 0x98:
             printf("TYA");
             break;
         case 0x99:
-            printf("STA $NNNN,Y");
+            printf("STA $%02x%02x,Y", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0x9a:
             printf("TXS");
             break;
         case 0x9d:
-            printf("STA $NNNN,X");
+            printf("STA $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0xa0:
-            printf("LDY #$NN");
+            printf("LDY #$%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xa1:
-            printf("LDA ($NN,X)");
+            printf("LDA ($%02x,X)", code[1]);
+            opbytes = 2;
             break;
         case 0xa2:
-            printf("LDX #$NN");
+            printf("LDX #$%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xa4:
-            printf("LDY $NN");
+            printf("LDY $%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xa5:
-            printf("LDA $NN");
+            printf("LDA $%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xa6:
-            printf("LDX $NN");
+            printf("LDX $%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xa8:
             printf("TAY");
             break;
         case 0xa9:
-            printf("LDA $NN");
+            printf("LDA $%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xaa:
             printf("TAX");
             break;
         case 0xac:
-            printf("LDY $NNNN");
+            printf("LDY $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0xad:
-            printf("LDA $NNNN");
+            printf("LDA $%02x%02x", code[2], code[1];
+            opbytes = 3;
             break;
         case 0xae:
-            printf("LDX $NNNN");
+            printf("LDX $%02x%02x", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0xb0:
-            printf("BCS $NN");
+            printf("BCS $%02x", code[1]);
+            opbytes = 2;
             break;
         case 0xb1:
-            printf("LDA ($NN),Y");
+            printf("LDA ($%02x),Y", code[1]);
+            opbytes = 2;
             break;
         case 0xb4:
-            printf("LDY $NN,X");
+            printf("LDY $%02x,X");
+            opbytes = 2;
             break;
         case 0xb5:
-            printf("LDA $NN,X");
+            printf("LDA $%02x,X", code[1]);
+            opbytes = 2;
             break;
         case 0xb6:
-            printf("LDX $NN,Y");
+            printf("LDX $%02x,Y", code[1]);
+            opbytes = 2;
             break;
         case 0xb8:
             printf("CLV");
             break;
         case 0xb9:
-            printf("LDA ($NN),Y");
+            printf("LDA ($%02x),X", code[1]);
+            opbytes = 2;
             break;
         case 0xba:
             printf("TSX");
             break;
         case 0xbc:
-            printf("LDY $NNNN,X");
+            printf("LDY $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
             break;
         case 0xbd:
-            printf("LDA $NNNN,X");
+            printf("LDA $%02x%02x,X", code[2], code[1]);
+            opbytes = 3;
             break;
         /* Raul does opcode $be to opcode $fe */
 
