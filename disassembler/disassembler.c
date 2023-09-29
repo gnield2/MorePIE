@@ -88,7 +88,7 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             opbytes = 2;
             break;
         case 0x24: 
-            printf("BIT $02x", code[1]);    
+            printf("BIT $%02x", code[1]);    
             opbytes = 2;
             break;
         case 0x25: 
@@ -103,7 +103,7 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             printf("PLP");    
             break;
         case 0x29: 
-            printf("AND #$02x", code[1]);
+            printf("AND #$%02x", code[1]);
             opbytes = 2;
             break;
         case 0x2a: 
@@ -291,7 +291,7 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             opbytes = 3;
             break;
         case 0xad:
-            printf("LDA $%02x%02x", code[2], code[1];
+            printf("LDA $%02x%02x", code[2], code[1]);
             opbytes = 3;
             break;
         case 0xae:
@@ -487,8 +487,6 @@ int Disassemble6502p(unsigned char* buffer, int pc)
 			printf("INC $%02x%02x, X", code[2], code[1]);
 			opbytes = 3;
 			break;
-
-
     }
 
     printf("\n");
@@ -502,7 +500,6 @@ int main(int argc, char* argv[])
     {
         fprintf(stderr, "Error: Failed to open %s\n", argv[1]);
         exit(1);
- main
     }
 
     fseek(f, 0L, SEEK_END);
