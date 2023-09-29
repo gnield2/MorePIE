@@ -205,6 +205,124 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             printf("LDA $NNNN,X");
             break;
         /* Raul does opcode $be to opcode $fe */
+		case 0xbe:	
+			printf("LDX $NNNN,Y"); 
+			break;
+		case 0xc0:	
+			printf("CPY #$NN");
+			break;
+		case 0xc1:	
+			printf("CMP ($NN,X)");
+			break;
+		case 0xc4:	
+			printf("CPY $NN");
+			break;
+		case 0xc5:	
+			printf("CMP $NN");
+			break;
+		case 0xc6:	
+			printf("DEC $NN");
+			break;
+		case 0xc8:	
+			printf("INY");
+			break;
+		case 0xc9:	
+			printf("CMP #$NN");
+			break;
+		case 0xca:	
+			printf("DEX");
+			break;
+		case 0xcc:	
+			printf("CPY $NNNN");
+			break;
+		case 0xcd:
+			printf("CMP $NNNN");
+			break;
+		case 0xce:
+			printf("DEC $NNNN");
+			break;
+		case 0xd0:
+			printf("BNE $NN");
+			break;
+		case 0xd1:
+			printf("CMP ($NN),Y");
+			break;
+		case 0xd5:
+			printf("CMP $NN,X");
+			break;
+		case 0xd6:
+			printf("DEC $NN,X");
+			break;
+		case 0xd8:
+			printf("CLD");
+			break;
+		case 0xd9:
+			printf("CMP $NNNN,Y");
+			break;
+		case 0xdd:	
+			printf("CMP $NNNN,X");
+			break;
+		case 0xde:	
+			printf("DEC $NNNN,X");
+			break;
+		case 0xe0:	
+			printf("CPX #$NN");
+			break;
+		case 0xe1:
+			printf("SBC ($NN,X)");
+			break;
+		case 0xe4:
+			printf("CPX $NN");
+			break;
+		case 0xe5:	
+			printf("SBC $NN");
+			break;
+		case 0xe6:	
+			printf("INC $NN");
+			break;
+		case 0xe8:
+			printf("INX");
+			break;
+		case 0xe9:
+			printf("SBC #$NN");
+			break;
+		case 0xea:
+			printf("NOP"); 
+			break;
+		case 0xec:
+			printf("CPX $NNNN");
+			break;
+		case 0xed:
+			printf("SBC $NNNN");
+			break;
+		case 0xee:
+			printf("INC $NNNN");
+			break;
+		case 0xf0:
+			printf("BEQ $NN");
+			break;
+		case 0xf1:
+			printf("SBC ($NN),Y");
+			break;
+		case 0xf5:
+			printf("SBC $NN,X");
+			break;
+		case 0xf6:
+			printf("INC $NN,X");
+			break;
+		case 0xf8:
+			printf("SED");
+			break;
+		case 0xf9:
+			printf("SBC $NNNN,Y");
+			break;
+		case 0xfd:
+			printf("SBC $NNNN,X");
+			break;
+		case 0xfe:
+			printf("INC $NNNN, X");
+			break;
+
 
     }
     return opbytes;
@@ -217,6 +335,7 @@ int main(int argc, char* argv[])
     {
         fprintf(stderr, "Error: Failed to open %s\n", argv[1]);
         exit(1);
+ main
     }
 
     fseek(f, 0L, SEEK_END);
