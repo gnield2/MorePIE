@@ -307,7 +307,7 @@ int Disassemble6502p(unsigned char* buffer, int pc)
             opbytes = 2;
             break;
         case 0xb4:
-            printf("LDY $%02x,X");
+            printf("LDY $%02x,X", code[1]);
             opbytes = 2;
             break;
         case 0xb5:
@@ -351,7 +351,7 @@ int Disassemble6502p(unsigned char* buffer, int pc)
 			break;
 		case 0xc4:	
 			printf("CPY $%02x", code[1]);
-			opbytes = 2
+            opbytes = 2;
 			break;
 		case 0xc5:	
 			printf("CMP $%02x", code[1]);
@@ -415,30 +415,30 @@ int Disassemble6502p(unsigned char* buffer, int pc)
 			opbytes = 3;
 			break;
 		case 0xe0:	
-			printf("CPX #$%02x");
+			printf("CPX #$%02x", code[1]);
 			opbytes = 2;
 			break;
 		case 0xe1:
-			printf("SBC ($%02x,X)");
+			printf("SBC ($%02x,X)", code[1]);
 			opbytes = 2;
 			break;
 		case 0xe4:
-			printf("CPX $%02x");
+			printf("CPX $%02x", code[1]);
 			opbytes = 2;
 			break;
 		case 0xe5:	
-			printf("SBC $%02x");
+			printf("SBC $%02x", code[1]);
 			opbytes = 2;
 			break;
 		case 0xe6:	
-			printf("INC $%02x");
+			printf("INC $%02x", code[1]);
 			opbytes = 2;
 			break;
 		case 0xe8:
 			printf("INX");
 			break;
 		case 0xe9:
-			printf("SBC #$%02x");
+			printf("SBC #$%02x", code[1]);
 			opbytes = 2;
 			break;
 		case 0xea:
