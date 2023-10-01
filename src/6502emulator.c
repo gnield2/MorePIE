@@ -12,55 +12,112 @@ void Emulate6502(State6502* state) {
     // implement all cases here
     switch(*opcode) {
         case 0x00:
-            Un(state);
+            &state->&flags->B = 1;
             break;
         case 0x01:
-            Un(state);
+            if (&state->x == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            %state->&flags->N = 1;
             break;
         case 0x05:
-            Un(state);
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x06:
-            Un(state);
+            &state->&flags->C = 1;
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x08:
-            Un(state);
+            &state->stack = &state->&flags;
             break;
         case 0x09:
-            Un(state);
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x0a:
-            Un(state);
+            &state->&flags->C = 1;
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x0d:
-            Un(state);
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x0e:
-            Un(state);
+            &state->&flags->C = 1;
+            if (&state->a == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x10:
             Un(state);
             break;
         case 0x11:
-            Un(state);
+            if (&state->y == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x15:
-            Un(state);
+            if (&state->x == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x16:
-            Un(state);
+            &state->&flags->C = 1;
+            if (&state->x == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x18:
-            Un(state);
+            &state->&flags->C = 0;
             break;
         case 0x19:
-            Un(state);
+            if (&state->y == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x1d:
-            Un(state);
+            if (&state->x == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x1e:
-            Un(state);
+            &state->&flags->C = 1;
+            if (&state->x == 0)
+            {
+                &state->&flags->Z = 1;
+            }
+            &state->&flags->N = 1;
             break;
         case 0x20:
             Un(state);
