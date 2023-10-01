@@ -123,6 +123,9 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x41:
+            // EOR ($NN,X)
+            // Exclusive OR indexed indirect
+            //&state->a = &state->a ^ &state->stack[&state->x];
             Un(state);
             break;
         case 0x45:
@@ -132,7 +135,9 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x48:
-            Un(state);
+            // PHA
+            // push a copy of the accumulator value onto stack
+            &state->stack[sp] = &state->flags->A;
             break;
         case 0x49:
             Un(state);
@@ -162,7 +167,9 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x58:
-            Un(state);
+            // CLI
+            // Clear interrupt disable flag
+            &state->flags->I = 0;
             break;
         case 0x59:
             Un(state);
