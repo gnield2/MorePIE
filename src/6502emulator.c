@@ -124,46 +124,68 @@ void Emulate6502(State6502* state) {
             break;
         case 0x41:
             // EOR ($NN,X)
-            // Exclusive OR indexed indirect
-            //&state->a = &state->a ^ &state->stack[&state->x];
-            Un(state);
+            // Exclusive OR Indexed Indirect
+            target_address = (&state->x + opcode[1]) & 0xFF;
+            &state->a = &state->a ^ &state->stack[target_address];
             break;
         case 0x45:
-            Un(state);
+            // EOR $NN
+            // Exclusive OR Zero Page
+            &state->a = &state->a ^ &state->stack[opcode[1]];
             break;
         case 0x46:
+            // LSR $NN
+            // Logical Shift Right Zero Page
             Un(state);
             break;
         case 0x48:
             // PHA
-            // push a copy of the accumulator value onto stack
+            // Push Accumulator
             &state->stack[sp] = &state->flags->A;
             break;
         case 0x49:
-            Un(state);
+            // EOR #$NN
+            // Exclusive OR Immediate
+            &state->a = &state->a ^ opcode[1];
             break;
         case 0x4a:
+            // LSR A
+            // Logical Shift Right Accumulator
             Un(state);
             break;
         case 0x4c:
+            // JMP $NNNN
+            // Jump Absolute
             Un(state);
             break;
         case 0x4d:
+            // EOR $NNNN
+            // Exclusive OR Absolute
             Un(state);
             break;
         case 0x4e:
+            // LSR $NNNN
+            // Logical Shift Right Absolute
             Un(state);
             break;
         case 0x50:
+            // BVC $NN
+            // Branch if Overflow Clear
             Un(state);
             break;
         case 0x51:
+            // EOR ($NN),Y
+            // Exclusive OR Indirect Indexed
             Un(state);
             break;
         case 0x55:
+            // EOR $NN,X
+            // Exclusive OR Zero Page X
             Un(state);
             break;
         case 0x56:
+            // LSR $NN,X
+            // Logical Shift Right Zero Page X
             Un(state);
             break;
         case 0x58:
@@ -172,18 +194,28 @@ void Emulate6502(State6502* state) {
             &state->flags->I = 0;
             break;
         case 0x59:
+            // EOR $NNNN,Y
+            // Exclusive OR Absolute Y
             Un(state);
             break;
         case 0x5d:
+            // EOR $NNNN,Y
+            // Exclusive OR Absolute X 
             Un(state);
             break;
         case 0x5e:
+            // LSR $NNNN,X
+            // Logical Shift Right Absolute X
             Un(state);
             break;
         case 0x60:
+            // RTS
+            // Return from Subroutine
             Un(state);
             break;
         case 0x61:
+            // ADC ($NN,X)
+            // Add with Carry Indexed Indirect
             Un(state);
             break;
         case 0x65:
