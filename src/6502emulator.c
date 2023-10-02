@@ -124,13 +124,17 @@ void Emulate6502(State6502* state) {
             break;
         case 0x41:
             // EOR ($NN,X)
-            // Exclusive OR Indexed Indirect
+            // Exclusive OR Indexed Indirect X
             state->a = state->a ^ state->stack[0xFF & (state->x + opcode[1])];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x45:
             // EOR $NN
             // Exclusive OR Zero Page
             state->a = state->a ^ state->stack[opcode[1]];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x46:
             // LSR $NN
@@ -141,6 +145,7 @@ void Emulate6502(State6502* state) {
             // PHA
             // Push Accumulator
             state->stack[state->sp] = state->a;
+            state->sp++;
             break;
         case 0x49:
             // EOR #$NN
@@ -155,12 +160,14 @@ void Emulate6502(State6502* state) {
         case 0x4c:
             // JMP $NNNN
             // Jump Absolute
-            Un(state);
+            state->pc = opcode[2]<<8 | opcode[1];
             break;
         case 0x4d:
             // EOR $NNNN
             // Exclusive OR Absolute
-            Un(state);
+            state->a = state->a ^ state->stack[opcode[2]<<8 | opcode[1]];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x4e:
             // LSR $NNNN
@@ -170,17 +177,25 @@ void Emulate6502(State6502* state) {
         case 0x50:
             // BVC $NN
             // Branch if Overflow Clear
-            Un(state);
+            if (opcode[1]>>7 == 1)
+                state->pc = state->pc - (opcode[1] & 0xEF) ? state->flags.V == 0 : state->pc;
+            else
+                state->pc = state->pc + opcode[1] ? state->flags.V == 0 : state->pc;
             break;
         case 0x51:
             // EOR ($NN),Y
             // Exclusive OR Indirect Indexed
+            //state->a = state->a ^ state->stack[state->stack[opcode[1]] + state->y];
+            //state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.N = 1 ? state->a>>7 == 1 : 0;
             Un(state);
             break;
         case 0x55:
             // EOR $NN,X
             // Exclusive OR Zero Page X
-            Un(state);
+            state->a = state->a ^ state->stack[opcode[1] + state->x];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x56:
             // LSR $NN,X
@@ -195,12 +210,16 @@ void Emulate6502(State6502* state) {
         case 0x59:
             // EOR $NNNN,Y
             // Exclusive OR Absolute Y
-            Un(state);
+            state->a = state->a ^ state->stack[(opcode[2]<<8 | opcode[1]) + state->y];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x5d:
-            // EOR $NNNN,Y
+            // EOR $NNNN,X
             // Exclusive OR Absolute X 
-            Un(state);
+            state->a = state->a ^ state->stack[(opcode[2]<<8 | opcode[1]) + state->x];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x5e:
             // LSR $NNNN,X
@@ -232,11 +251,16 @@ void Emulate6502(State6502* state) {
             // Pull Accumulator
             state->a = state->stack[state->sp];
             state->flags.Z = 1 ? state->a == 0 : 0;
-            state->flags.N = 1 ? state->a>>7 == 1 : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x69:
             // ADC #$NN
             // Add with Carry Immediate
+            // state->a = state->a + opcode[1] + (state->flags.C<<7);
+            // state->flags.C = 1 ? (state->a + opcode[1]) : 0;
+            // state->flags.Z = 1 ? state->a == 0 : 0;
+            // state->flags.V = 1 ? CHECK SIGN BIT : 0;
+            // state->flags.N = 1 ? state->a & 0x80 : 0;
             Un(state);
             break;
         case 0x6a:
