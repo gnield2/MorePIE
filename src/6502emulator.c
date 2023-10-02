@@ -125,13 +125,12 @@ void Emulate6502(State6502* state) {
         case 0x41:
             // EOR ($NN,X)
             // Exclusive OR Indexed Indirect
-            target_address = (&state->x + opcode[1]) & 0xFF;
-            &state->a = &state->a ^ &state->stack[target_address];
+            state->a = state->a ^ state->stack[0xFF & (state->x + opcode[1])];
             break;
         case 0x45:
             // EOR $NN
             // Exclusive OR Zero Page
-            &state->a = &state->a ^ &state->stack[opcode[1]];
+            state->a = state->a ^ state->stack[opcode[1]];
             break;
         case 0x46:
             // LSR $NN
@@ -141,12 +140,12 @@ void Emulate6502(State6502* state) {
         case 0x48:
             // PHA
             // Push Accumulator
-            &state->stack[sp] = &state->flags->A;
+            state->stack[state->sp] = state->a;
             break;
         case 0x49:
             // EOR #$NN
             // Exclusive OR Immediate
-            &state->a = &state->a ^ opcode[1];
+            state->a = state->a ^ opcode[1];
             break;
         case 0x4a:
             // LSR A
@@ -191,7 +190,7 @@ void Emulate6502(State6502* state) {
         case 0x58:
             // CLI
             // Clear interrupt disable flag
-            &state->flags->I = 0;
+            state->flags.I = 0;
             break;
         case 0x59:
             // EOR $NNNN,Y
@@ -219,63 +218,105 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x65:
+            // ADC $NN
+            // Add with Carry Zero Page
             Un(state);
             break;
         case 0x66:
+            // ROR $NN
+            // Rotate Right Zero Page
             Un(state);
             break;
         case 0x68:
-            Un(state);
+            // PLA
+            // Pull Accumulator
+            state->a = state->stack[state->sp];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x69:
+            // ADC #$NN
+            // Add with Carry Immediate
             Un(state);
             break;
         case 0x6a:
+            // ROR A
+            // Rotate Right Accumulator
             Un(state);
             break;
         case 0x6c:
+            // JMP $NN
+            // Jump indirect
             Un(state);
             break;
         case 0x6d:
+            // ADC $NNNN
+            // Add with Carry Absolute
             Un(state);
             break;
         case 0x6e:
+            // ROR $NNNN,X
+            // Rotate Right Absolute,X
             Un(state);
             break;
         case 0x70:
+            // BVS $NN
+            // Branch if Overflow Set
             Un(state);
             break;
         case 0x71:
+            // ADC ($NN),Y
+            // Add with Carry Indirect Indexed
             Un(state);
             break;
         case 0x75:
+            // ADC $NN,X
+            // Add with Carry Zero Page,X
             Un(state);
             break;
         case 0x76:
+            // ROR $NN,X
+            // Rotate Right Zero Page,X
             Un(state);
             break;
         case 0x78:
-            Un(state);
+            // SEI
+            // Set Interrupt Disable
+            state->flags.I = 1;
             break;
         case 0x79:
+            // ADC $NNNN,Y
+            // Add with Carry Absolute,Y
             Un(state);
             break;
         case 0x7d:
+            // ADC $NNNN,X
+            // Add with Carry Absolute,X
             Un(state);
             break;
         case 0x7e:
+            // ROR $NNNN
+            // Rotate Right Absolute
             Un(state);
             break;
         case 0x81:
+            // STA ($NN,X)
+            // Store Accumulator Indexed Indirect
             Un(state);
             break;
         case 0x84:
+            // STY $NN
+            // Store Y Register Zero Page
             Un(state);
             break;
         case 0x85:
+            // STA $NN
+            // Store Accumulator Zero Page
             Un(state);
             break;
         case 0x86:
+            // STX $NN
+            // Store X Register Zero Page
             Un(state);
             break;
         case 0x88:
