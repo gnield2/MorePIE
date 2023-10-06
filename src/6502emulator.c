@@ -572,7 +572,7 @@ void Emulate6502(State6502* state) {
             if (&state->x == 0)
                 &state->flags->Z = 1;
             if ((&state->x && (1 << 7)) != 0)
-                &state->flags.&N = 1;
+                &(&state->flags.N) = 1;
             Un(state);
             break;
         case 0xc0:
