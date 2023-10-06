@@ -405,9 +405,9 @@ void Emulate6502(State6502* state) {
             break;
         case 0x99: // STA Absolute,Y
             // store accumulator at (absolute)+Y mem
-            //uint8_t memAddress = ((*opcode[1] << 2) | *opcode[2]);
-            //printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, *opcode[1], *opcode[2]);
-            printf("%04x %02x\n", opcode[1], opcode[2]);
+            int memAddress = ((opcode[1] << 2) | opcode[2]);
+            printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, opcode[1], opcode[2]);
+            //printf("%02x %02x\n", opcode[1], opcode[2]);
             Un(state);
             break;
         case 0x9a: // TXS Implied
@@ -700,8 +700,8 @@ int main() {
     printf("dummy main funciton\n");
     State6502 test;
     test.stack[1] = 0x99;
-    test.stack[2] = 2000;
-    test.stack[3] = 0xFF;
+    test.stack[2] = 0xa1;
+    test.stack[3] = 0xa1;
     test.pc = 1;
     Emulate6502(&test);
 }
