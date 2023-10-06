@@ -569,7 +569,8 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0xbe: // LDX Absolute,Y
-            Flags *flag = &state->flags;
+            Flags flag;
+            *flag = &state->flags;
             if (&state->x == 0)
                 flag->Z = 1;
             if ((&state->x && (1 << 7)) != 0)
