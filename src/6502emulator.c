@@ -1,6 +1,8 @@
 #include "../include/6502emulator.h"
 
 void Un(State6502* state) {
+    printf("\n");
+    exit(1);
     printf("Unimplemented, cannot proceed\n");
     exit(1);
 }
@@ -343,127 +345,233 @@ void Emulate6502(State6502* state) {
         case 0x7e:
             Un(state);
             break;
-        case 0x81:
+        case 0x81: // STA (Indirect,X)
             Un(state);
             break;
-        case 0x84:
+        case 0x84: // STY Zero Page
             Un(state);
             break;
-        case 0x85:
+        case 0x85: // STA Zero Page
             Un(state);
             break;
-        case 0x86:
+        case 0x86: // STX Zero Page
             Un(state);
             break;
-        case 0x88:
+        case 0x88: // DEY Implied
+            if ($state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0x8a:
+        case 0x8a: // TXA Implied
+            if ($state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0x8c:
+        case 0x8c: // STY Absolute
             Un(state);
             break;
-        case 0x8d:
+        case 0x8d: // STA Absolute
             Un(state);
             break;
-        case 0x8e:
+        case 0x8e: // STX Absolute
             Un(state);
             break;
-        case 0x90:
+        case 0x90: // BCC Relative
             Un(state);
             break;
-        case 0x91:
+        case 0x91: // STA (Indirect),Y
             Un(state);
             break;
-        case 0x94:
+        case 0x94: // STY Zero Page,X
             Un(state);
             break;
-        case 0x95:
+        case 0x95: // STA Zero Page,X
             Un(state);
             break;
-        case 0x96:
+        case 0x96: // STX Zero Page,Y
             Un(state);
             break;
-        case 0x98:
+        case 0x98: // TYA Implied
+            if ($state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0x99:
+        case 0x99: // STA Absolute,Y
+            // store accumulator at (absolute)+Y mem
+            int memAddress = (*opcode[1] << 2) | *opcode[2]);
+            printf("calculated memaddress: %d\ncodes: %d %d\n", memAddress, *opcode[1], *opcode[2]);
             Un(state);
             break;
-        case 0x9a:
+        case 0x9a: // TXS Implied
             Un(state);
             break;
-        case 0x9d:
+        case 0x9d: // STA Absolute,X
+            // store accumulator at (absolute)+X
+            int temp = &state->x + (absolute);
             Un(state);
             break;
-        case 0xa0:
+        case 0xa0: // LDY Immediate
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa1:
+        case 0xa1: // LDA (Indirect,X)
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa2:
+        case 0xa2: // LDX Immediate
+            if (&state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa4:
+        case 0xa4: // LDY Zero Page
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa5:
+        case 0xa5: // LDA Zero Page
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa6:
+        case 0xa6: // LDX Zero Page
+            if (&state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa8:
+        case 0xa8: // TAY Implied
+            if ($state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xa9:
+        case 0xa9: // LDA Immediate
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xaa:
+        case 0xaa: // TAX Implied
+            if ($state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xac:
+        case 0xac: // LDY Absolute
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xad:
+        case 0xad: // LDA Absolute
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xae:
+        case 0xae: // LDX Absolute
+            if (&state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb0:
+        case 0xb0: // LDY Immediate
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb1:
+        case 0xb1: // LDA (Indirect),Y
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb4:
+        case 0xb4: // LDY Zero Page,X
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb5:
+        case 0xb5: // LDA Zero Page,X
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb6:
+        case 0xb6: // LDX Zero Page,Y
+            if (&state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
+            Un(state);
             Un(state);
             break;
         case 0xb8:
+            &state->flags.V = 0;
+            break;
+        case 0xb9: // LDA Absolute,Y
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xb9:
+        case 0xba: // TSX Implied
+            if ($state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xba:
+        case 0xbc: // LDY Absolute,X
+            if (&state->y == 0)
+                &state->flags.Z = 1;
+            if ((&state->y && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xbc:
+        case 0xbd: // LDA Absolute,X
+            if (&state->a == 0)
+                &state->flags.Z = 1;
+            if ((&state->a && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
-        case 0xbd:
-            Un(state);
-            break;
-        case 0xbe:
+        case 0xbe: // LDX Absolute,Y
+            if (&state->x == 0)
+                &state->flags.Z = 1;
+            if ((&state->x && (1 << 7)) != 0)
+                &state->flags.N = 1;
             Un(state);
             break;
         case 0xc0:
