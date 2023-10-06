@@ -39,7 +39,8 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x08:
-            &state->stack = &state->&flags;
+            //&state->stack = &state->&flags;
+            Un(state);
             break;
         case 0x09:
             if (state->a == 0)
