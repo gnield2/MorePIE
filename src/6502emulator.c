@@ -698,4 +698,10 @@ void Emulate6502(State6502* state) {
 
 int main() {
     printf("dummy main funciton\n");
+    State6502 test;
+    test.stack[1] = 0x99;
+    test.stack[2] = 0x2000;
+    test.stack[3] = 0xFF;
+    test.pc = 1;
+    Emulate6502(&test);
 }
