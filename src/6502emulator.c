@@ -358,14 +358,14 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x88: // DEY Implied
-            if ($state->y == 0)
+            if (&state->y == 0)
                 &state->&flags->Z = 1;
             if ((&state->y && (1 << 7)) != 0)
                 &state->&flags->N = 1;
             Un(state);
             break;
         case 0x8a: // TXA Implied
-            if ($state->a == 0)
+            if (&state->a == 0)
                 &state->&flags->Z = 1;
             if ((&state->a && (1 << 7)) != 0)
                 &state->&flags->N = 1;
@@ -396,7 +396,7 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x98: // TYA Implied
-            if ($state->a == 0)
+            if (&state->a == 0)
                 &state->&flags->Z = 1;
             if ((&state->a && (1 << 7)) != 0)
                 &state->&flags->N = 1;
@@ -404,8 +404,9 @@ void Emulate6502(State6502* state) {
             break;
         case 0x99: // STA Absolute,Y
             // store accumulator at (absolute)+Y mem
-            uint8_t memAddress = (*opcode[1] << 2) | *opcode[2]);
-            printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, *opcode[1], *opcode[2]);
+            //uint8_t memAddress = ((*opcode[1] << 2) | *opcode[2]);
+            //printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, *opcode[1], *opcode[2]);
+            printf("%04x %02x\n", opcode[1], opcode[2]);
             Un(state);
             break;
         case 0x9a: // TXS Implied
@@ -413,7 +414,7 @@ void Emulate6502(State6502* state) {
             break;
         case 0x9d: // STA Absolute,X
             // store accumulator at (absolute)+X
-            int temp = &state->x + (absolute);
+            //int temp = &state->x + (absolute);
             Un(state);
             break;
         case 0xa0: // LDY Immediate
@@ -547,7 +548,7 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0xba: // TSX Implied
-            if ($state->x == 0)
+            if (&state->x == 0)
                 &state->&flags->Z = 1;
             if ((&state->x && (1 << 7)) != 0)
                 &state->&flags->N = 1;
@@ -569,9 +570,9 @@ void Emulate6502(State6502* state) {
             break;
         case 0xbe: // LDX Absolute,Y
             if (&state->x == 0)
-                &state->&flags->Z = 1;
+                &state->(&flags)->Z = 1;
             if ((&state->x && (1 << 7)) != 0)
-                &state->&flags->N = 1;
+                &state->(&flags)->N = 1;
             Un(state);
             break;
         case 0xc0:
