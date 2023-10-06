@@ -405,7 +405,8 @@ void Emulate6502(State6502* state) {
             break;
         case 0x99: // STA Absolute,Y
             // store accumulator at (absolute)+Y mem
-            uint64_t memAddress = ((opcode[1] << 2) | opcode[2]);
+            int memAddress = (opcode[1] << 2);
+            memAddress = memAddress | opcode[2];
             printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, opcode[1], opcode[2]);
             //printf("%02x %02x\n", opcode[1], opcode[2]);
             Un(state);
