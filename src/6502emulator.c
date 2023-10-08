@@ -12,228 +12,229 @@ void Emulate6502(State6502* state) {
     // implement all cases here
     switch(*opcode) {
         case 0x00:
-            &state->&flags->B = 1;
+            state->flags.B = 1;
             break;
         case 0x01:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            %state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x05:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x06:
-            &state->&flags->C = 1;
-            if (&state->a == 0)
+            state->flags.C = 1;
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x08:
-            &state->stack = &state->&flags;
+            //&state->stack = &state->flags;
+            Un(state);
             break;
         case 0x09:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x0a:
-            &state->&flags->C = 1;
-            if (&state->a == 0)
+            state->flags.C = 1;
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x0d:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x0e:
-            &state->&flags->C = 1;
-            if (&state->a == 0)
+            state->flags.C = 1;
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x10:
             Un(state);
             break;
         case 0x11:
-            if (&state->y == 0)
+            if (state->y == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x15:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x16:
-            &state->&flags->C = 1;
-            if (&state->x == 0)
+            state->flags.C = 1;
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x18:
-            &state->&flags->C = 0;
+            state->flags.C = 0;
             break;
         case 0x19:
-            if (&state->y == 0)
+            if (state->y == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x1d:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x1e:
-            &state->&flags->C = 1;
-            if (&state->x == 0)
+            state->flags.C = 1;
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x20:
             Un(state);
             break;
         case 0x21:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x24:
-            &state->&flags->V = 1;
-            &state->&flags->N = 1;
+            state->flags.V = 1;
+            state->flags.N = 1;
             break;
         case 0x25:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x26:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x28:
             Un(state);
             break;
         case 0x29:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x2a:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x2c:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->V = 1;
-            &state->&flags->N = 1;
+            state->flags.V = 1;
+            state->flags.N = 1;
             break;
         case 0x2d:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x2e:
-            &state->&flags->C = 1;
-            if (&state->a == 0)
+            state->flags.C = 1;
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x30:
             Un(state);
             break;
         case 0x31:
-            if (&state->y == 0)
+            if (state->y == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x35:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x36:
-            if (&state->a == 0)
+            if (state->a == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x38:
-            &state->&flags->C = 1;
+            state->flags.C = 1;
             break;
         case 0x39:
-            if (&state->y == 0)
+            if (state->y == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x3d:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x3e:
-            if (&state->x == 0)
+            if (state->x == 0)
             {
-                &state->&flags->Z = 1;
+                state->flags.Z = 1;
             }
-            &state->&flags->N = 1;
+            state->flags.N = 1;
             break;
         case 0x40:
             
@@ -344,127 +345,225 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x81:
-            Un(state);
+            state->stack[(opcode[1] + state->x) & 0xFF] = state->a;
             break;
         case 0x84:
-            Un(state);
+            state->stack[opcode[1]] = state->y;
             break;
         case 0x85:
-            Un(state);
+            state->stack[opcode[1]] = state->a;
             break;
         case 0x86:
-            Un(state);
+            state->stack[opcode[1]] = state->x;
             break;
         case 0x88:
-            Un(state);
+            state->y--;
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0x8a:
-            Un(state);
+            state->a = state->x;
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0x8c:
-            Un(state);
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->y;
             break;
         case 0x8d:
-            Un(state);
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->a;
             break;
         case 0x8e:
-            Un(state);
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->x;
             break;
         case 0x90:
-            Un(state);
+            if (state->flags.C == 0)
+                state->pc += opcode[1];
             break;
         case 0x91:
-            Un(state);
+            state->stack[opcode[1] + state->y] = state->a;
             break;
         case 0x94:
-            Un(state);
+            state->stack[(opcode[1]+state->x) & 0xFF] = state->y;
             break;
         case 0x95:
-            Un(state);
+            state->stack[(opcode[1] + state->x) & 0xFF] = state->a;
             break;
         case 0x96:
-            Un(state);
+            state->stack[(opcode[1] + state->y) & 0xFF] = state->x;
             break;
         case 0x98:
-            Un(state);
+            state->a = state->y;
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0x99:
-            Un(state);
+            state->stack[(opcode[2] << 8 | opcode[1]) + state->y] = state->a;
             break;
         case 0x9a:
-            Un(state);
+            state->sp = state->x;
             break;
         case 0x9d:
-            Un(state);
+            state->stack[(opcode[2] << 8 | opcode[1]) + state->x] = state->a;
             break;
         case 0xa0:
-            Un(state);
+            state->y = state->stack[opcode[1]];
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa1:
-            Un(state);
+            state->a = state->stack[(opcode[1] + state->x) & 0xFF];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa2:
-            Un(state);
+            state->x = state->stack[opcode[1]];
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa4:
-            Un(state);
+            state->y = state->stack[opcode[1]];
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa5:
-            Un(state);
+            state->a = state->stack[opcode[1]];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa6:
-            Un(state);
+            state->x = state->stack[opcode[1]];
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa8:
-            Un(state);
+            state->y = state->a;
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xa9:
-            Un(state);
+            state->a = state->stack[opcode[1]];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xaa:
-            Un(state);
+            state->x = state->a;
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xac:
-            Un(state);
+            state->y = state->stack[(opcode[2] << 8 | opcode[1])];
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xad:
-            Un(state);
+            state->a = state->stack[(opcode[2] << 8 | opcode[1])];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xae:
-            Un(state);
+            state->x = state->stack[(opcode[2] << 8 | opcode[1])];
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xb0:
-            Un(state);
+            if (state->flags.C == 1)
+                state->pc += opcode[1];
             break;
         case 0xb1:
-            Un(state);
+            state->a = state->stack[opcode[1] + state->y];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xb4:
-            Un(state);
+            state->y = state->stack[(opcode[1] + state->x) & 0xFF];
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xb5:
-            Un(state);
+            state->a = state->stack[(opcode[1] + state->x) & 0xFF];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xb6:
-            Un(state);
+            state->x = state->stack[(opcode[1] + state->y) & 0xFF];
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xb8:
-            Un(state);
+            state->flags.V = 0;
             break;
         case 0xb9:
-            Un(state);
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state->y];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xba:
-            Un(state);
+            state->x = state->sp;
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xbc:
-            Un(state);
+            state->y = state->stack[(opcode[2] << 8 | opcode[1]) + state->x];
+            if (state->y == 0)
+                state->flags.Z = 1;
+            if ((state->y && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xbd:
-            Un(state);
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state->x];
+            if (state->a == 0)
+                state->flags.Z = 1;
+            if ((state->a && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xbe:
-            Un(state);
+            state->x = state->stack[(opcode[2] << 8 | opcode[1]) + state->y];
+            if (state->x == 0)
+                state->flags.Z = 1;
+            if ((state->x && (1 << 7)) != 0)
+                state->flags.N = 1;
             break;
         case 0xc0:
             Un(state);
