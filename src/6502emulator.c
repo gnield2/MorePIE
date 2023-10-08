@@ -403,13 +403,13 @@ void Emulate6502(State6502* state) {
                 state->flags.N = 1;
             break;
         case 0x99:
-            state->stack[(opcode[2] << 8 | opcode[1]) + state.y] = state->a;
+            state->stack[(opcode[2] << 8 | opcode[1]) + state->y] = state->a;
             break;
         case 0x9a:
             state->sp = state->x;
             break;
         case 0x9d:
-            state->stack[(opcode[2] << 8 | opcode[1]) + state.x] = state->a;
+            state->stack[(opcode[2] << 8 | opcode[1]) + state->x] = state->a;
             break;
         case 0xa0:
             state->y = state->stack[opcode[1]];
@@ -531,7 +531,7 @@ void Emulate6502(State6502* state) {
             state->flags.V = 0;
             break;
         case 0xb9:
-            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state.y];
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state->y];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
@@ -545,21 +545,21 @@ void Emulate6502(State6502* state) {
                 state->flags.N = 1;
             break;
         case 0xbc:
-            state->y = state->stack[(opcode[2] << 8 | opcode[1]) + state.x];
+            state->y = state->stack[(opcode[2] << 8 | opcode[1]) + state->x];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
             break;
         case 0xbd:
-            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state.x];
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state->x];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
             break;
         case 0xbe:
-            state->x = state->stack[(opcode[2] << 8 | opcode[1]) + state.y];
+            state->x = state->stack[(opcode[2] << 8 | opcode[1]) + state->y];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
