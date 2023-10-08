@@ -1,8 +1,6 @@
 #include "../include/6502emulator.h"
 
 void Un(State6502* state) {
-    printf("\n");
-    exit(1);
     printf("Unimplemented, cannot proceed\n");
     exit(1);
 }
@@ -39,7 +37,7 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x08:
-            //&state->stack = &state->&flags;
+            //&state->stack = &state->flags;
             Un(state);
             break;
         case 0x09:
@@ -346,236 +344,226 @@ void Emulate6502(State6502* state) {
         case 0x7e:
             Un(state);
             break;
-        case 0x81: // STA (Indirect,X)
-            Un(state);
+        case 0x81:
+            state->stack[(opcode[1] + state->x) & 0xFF] = state->a;
             break;
-        case 0x84: // STY Zero Page
-            Un(state);
+        case 0x84:
+            state->stack[opcode[1]] = state->y;
             break;
-        case 0x85: // STA Zero Page
-            Un(state);
+        case 0x85:
+            state->stack[opcode[1]] = state->a;
             break;
-        case 0x86: // STX Zero Page
-            Un(state);
+        case 0x86:
+            state->stack[opcode[1]] = state->x;
             break;
-        case 0x88: // DEY Implied
+        case 0x88:
+            state->y--;
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0x8a: // TXA Implied
+        case 0x8a:
+            state->a = state->x;
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0x8c: // STY Absolute
-            Un(state);
+        case 0x8c:
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->y;
             break;
-        case 0x8d: // STA Absolute
-            Un(state);
+        case 0x8d:
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->a;
             break;
-        case 0x8e: // STX Absolute
-            Un(state);
+        case 0x8e:
+            state->stack[(opcode[2] << 8 | opcode[1])] = state->x;
             break;
-        case 0x90: // BCC Relative
-            Un(state);
+        case 0x90:
+            if (state->flags.C == 0)
+                state->pc += opcode[1];
             break;
-        case 0x91: // STA (Indirect),Y
-            Un(state);
+        case 0x91:
+            state->stack[opcode[1] + state->y] = state->a;
             break;
-        case 0x94: // STY Zero Page,X
-            Un(state);
+        case 0x94:
+            state->stack[(opcode[1]+state->x) & 0xFF] = state->y;
             break;
-        case 0x95: // STA Zero Page,X
-            Un(state);
+        case 0x95:
+            state->stack[(opcode[1] + state->x) & 0xFF] = state->a;
             break;
-        case 0x96: // STX Zero Page,Y
-            Un(state);
+        case 0x96:
+            state->stack[(opcode[1] + state->y) & 0xFF] = state->x;
             break;
-        case 0x98: // TYA Implied
+        case 0x98:
+            state->a = state->y;
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0x99: // STA Absolute,Y
-            // store accumulator at (absolute)+Y mem
-            int memAddress = (opcode[1] << 2);
-            memAddress = memAddress | opcode[2];
-            printf("calculated memaddress: %04x\ncodes: %02x %02x\n", memAddress, opcode[1], opcode[2]);
-            //printf("%02x %02x\n", opcode[1], opcode[2]);
-            Un(state);
+        case 0x99:
+            state->stack[(opcode[2] << 8 | opcode[1]) + state.y] = state->a;
             break;
-        case 0x9a: // TXS Implied
-            Un(state);
+        case 0x9a:
+            state->sp = state->x;
             break;
-        case 0x9d: // STA Absolute,X
-            // store accumulator at (absolute)+X
-            //int temp = state->x + (absolute);
-            Un(state);
+        case 0x9d:
+            state->stack[(opcode[2] << 8 | opcode[1]) + state.x] = state->a;
             break;
-        case 0xa0: // LDY Immediate
+        case 0xa0:
+            state->y = state->stack[opcode[1]];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa1: // LDA (Indirect,X)
+        case 0xa1:
+            state->a = state->stack[(opcode[1] + state->x) & 0xFF];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa2: // LDX Immediate
+        case 0xa2:
+            state->x = state->stack[opcode[1]];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa4: // LDY Zero Page
+        case 0xa4:
+            state->y = state->stack[opcode[1]];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa5: // LDA Zero Page
+        case 0xa5:
+            state->a = state->stack[opcode[1]];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa6: // LDX Zero Page
+        case 0xa6:
+            state->x = state->stack[opcode[1]];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa8: // TAY Implied
+        case 0xa8:
+            state->y = state->a;
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xa9: // LDA Immediate
+        case 0xa9:
+            state->a = state->stack[opcode[1]];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xaa: // TAX Implied
+        case 0xaa:
+            state->x = state->a;
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xac: // LDY Absolute
+        case 0xac:
+            state->y = state->stack[(opcode[2] << 8 | opcode[1])];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xad: // LDA Absolute
+        case 0xad:
+            state->a = state->stack[(opcode[2] << 8 | opcode[1])];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xae: // LDX Absolute
+        case 0xae:
+            state->x = state->stack[(opcode[2] << 8 | opcode[1])];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xb0: // LDY Immediate
-            if (state->y == 0)
-                state->flags.Z = 1;
-            if ((state->y && (1 << 7)) != 0)
-                state->flags.N = 1;
-            Un(state);
+        case 0xb0:
+            if (state->flags.C == 1)
+                state->pc += opcode[1];
             break;
-        case 0xb1: // LDA (Indirect),Y
+        case 0xb1:
+            state->a = state->stack[opcode[1] + state->y];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xb4: // LDY Zero Page,X
+        case 0xb4:
+            state->y = state->stack[(opcode[1] + state->x) & 0xFF];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xb5: // LDA Zero Page,X
+        case 0xb5:
+            state->a = state->stack[(opcode[1] + state->x) & 0xFF];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xb6: // LDX Zero Page,Y
+        case 0xb6:
+            state->x = state->stack[(opcode[1] + state->y) & 0xFF];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
-            Un(state);
             break;
         case 0xb8:
             state->flags.V = 0;
             break;
-        case 0xb9: // LDA Absolute,Y
+        case 0xb9:
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state.y];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xba: // TSX Implied
+        case 0xba:
+            state->x = state->sp;
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xbc: // LDY Absolute,X
+        case 0xbc:
+            state->y = state->stack[(opcode[2] << 8 | opcode[1]) + state.x];
             if (state->y == 0)
                 state->flags.Z = 1;
             if ((state->y && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xbd: // LDA Absolute,X
+        case 0xbd:
+            state->a = state->stack[(opcode[2] << 8 | opcode[1]) + state.x];
             if (state->a == 0)
                 state->flags.Z = 1;
             if ((state->a && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
-        case 0xbe: // LDX Absolute,Y
+        case 0xbe:
+            state->x = state->stack[(opcode[2] << 8 | opcode[1]) + state.y];
             if (state->x == 0)
                 state->flags.Z = 1;
             if ((state->x && (1 << 7)) != 0)
                 state->flags.N = 1;
-            Un(state);
             break;
         case 0xc0:
             Un(state);
@@ -699,10 +687,4 @@ void Emulate6502(State6502* state) {
 
 int main() {
     printf("dummy main funciton\n");
-    State6502 test;
-    test.stack[1] = 0x99;
-    test.stack[2] = 0xa1;
-    test.stack[3] = 0xa1;
-    test.pc = 1;
-    Emulate6502(&test);
 }
