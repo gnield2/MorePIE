@@ -8,6 +8,7 @@ void Un(State6502* state) {
 void Emulate6502(State6502* state) {
     // get the opcode
     unsigned char *opcode = &state->stack[state->pc];
+    uint8_t temp;
 
     // implement all cases here
     switch(*opcode) {
@@ -120,6 +121,8 @@ void Emulate6502(State6502* state) {
             Un(state);
             break;
         case 0x40:
+            // RTI
+            // Implied
             Un(state);
             break;
         case 0x41:
@@ -139,7 +142,10 @@ void Emulate6502(State6502* state) {
         case 0x46:
             // LSR $NN
             // Logical Shift Right Zero Page
-            Un(state);
+            state->flags.C = state[stack[opcode[1] & 0x01]];
+            state->stack[opcode[1]] = state->stack[opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[1]] == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x48:
             // PHA
@@ -155,12 +161,16 @@ void Emulate6502(State6502* state) {
         case 0x4a:
             // LSR A
             // Logical Shift Right Accumulator
+            state->flags.C = state->a & 0x01;
+            state->stack[opcode[1]] = state->a >> 1;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a >> 7 == 1 : 0;
             Un(state);
             break;
         case 0x4c:
             // JMP $NNNN
             // Jump Absolute
-            state->pc = opcode[2]<<8 | opcode[1];
+            state->pc = opcode[2] << 8 | opcode[1];
             break;
         case 0x4d:
             // EOR $NNNN
@@ -172,7 +182,9 @@ void Emulate6502(State6502* state) {
         case 0x4e:
             // LSR $NNNN
             // Logical Shift Right Absolute
-            Un(state);
+            state->stack[opcode[2]<<8 | opcode[1]] = state->stack[opcode[2]<<8 | opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1]]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x50:
             // BVC $NN
@@ -185,10 +197,9 @@ void Emulate6502(State6502* state) {
         case 0x51:
             // EOR ($NN),Y
             // Exclusive OR Indirect Indexed
-            //state->a = state->a ^ state->stack[state->stack[opcode[1]] + state->y];
-            //state->flags.Z = 1 ? state->a == 0 : 0;
-            //state->flags.N = 1 ? state->a>>7 == 1 : 0;
-            Un(state);
+            state->a = state->a ^ state->stack[state->stack[opcode[1]] | (state->stack[opcode[1] + 1] << 8) + state->y];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x55:
             // EOR $NN,X
@@ -200,7 +211,9 @@ void Emulate6502(State6502* state) {
         case 0x56:
             // LSR $NN,X
             // Logical Shift Right Zero Page X
-            Un(state);
+            state->stack[opcode[2]<<8 | opcode[1]] = state->stack[opcode[2]<<8 | opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1]]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x58:
             // CLI
@@ -224,7 +237,9 @@ void Emulate6502(State6502* state) {
         case 0x5e:
             // LSR $NNNN,X
             // Logical Shift Right Absolute X
-            Un(state);
+            state->stack[opcode[2]<<8 | opcode[1] + state->x] = state->stack[opcode[2]<<8 | opcode[1] + state->x] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1] + state->x]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1] + state->x] >> 7 == 1 : 0;
             break;
         case 0x60:
             // RTS
@@ -244,7 +259,9 @@ void Emulate6502(State6502* state) {
         case 0x66:
             // ROR $NN
             // Rotate Right Zero Page
-            Un(state);
+            temp = state->stack[opcode[1]];
+            state->stack[opcode[1]] = state->stack[opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x68:
             // PLA
@@ -256,52 +273,75 @@ void Emulate6502(State6502* state) {
         case 0x69:
             // ADC #$NN
             // Add with Carry Immediate
-            // state->a = state->a + opcode[1] + (state->flags.C<<7);
-            // state->flags.C = 1 ? (state->a + opcode[1]) : 0;
-            // state->flags.Z = 1 ? state->a == 0 : 0;
-            // state->flags.V = 1 ? CHECK SIGN BIT : 0;
-            // state->flags.N = 1 ? state->a & 0x80 : 0;
-            Un(state);
+            temp = state->a;
+            state->a = state->a + opcode[1] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x6a:
             // ROR A
             // Rotate Right Accumulator
-            Un(state);
+            temp = state->a;
+            state->a = state->a >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x6c:
             // JMP $NN
             // Jump indirect
-            Un(state);
+            state->pc = state->stack[(opcode[1] + 1) << 8 | opcode[1]];
             break;
         case 0x6d:
             // ADC $NNNN
             // Add with Carry Absolute
-            Un(state);
+            temp = state->a;
+            state->a = state->a + state->stack[opcode[2] << 8 | opcode[1]] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x6e:
             // ROR $NNNN,X
             // Rotate Right Absolute,X
-            Un(state);
+            temp = state->stack[opcode[2] << 8 | opcode[1] + state->x];
+            state->stack[opcode[2] << 8 | opcode[1] + state->x] = state->stack[opcode[2] << 8 | opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
+            state->flags.N = 1 ? state->stack[opcode[2] << 8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x70:
             // BVS $NN
             // Branch if Overflow Set
-            Un(state);
+            state->pc = state->pc + int8_t(opcode[1]) ? state->flags.V == 1 : state->pc;
             break;
         case 0x71:
             // ADC ($NN),Y
             // Add with Carry Indirect Indexed
-            Un(state);
+            temp = state->a;
+            state->a = state->a + state->stack[state->stack[opcode[1]] | (state->stack[opcode[1] + 1] << 8) + state->y] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x75:
             // ADC $NN,X
             // Add with Carry Zero Page,X
-            Un(state);
+            temp = state->a;
+            state->a = state->a + state->stack[opcode[2]<<8 | opcode[1]] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x76:
             // ROR $NN,X
             // Rotate Right Zero Page,X
-            Un(state);
+            temp = state->stack[opcode[1] + state->x];
+            state->stack[opcode[1] + state->x] = state->stack[opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x78:
             // SEI
@@ -321,27 +361,17 @@ void Emulate6502(State6502* state) {
         case 0x7e:
             // ROR $NNNN
             // Rotate Right Absolute
-            Un(state);
+            temp = state->stack[opcode[2] << 8 | opcode[1]];
+            state->stack[opcode[2] << 8 | opcode[1]] = state->stack[opcode[2] << 8 | opcode[1}] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x81:
-            // STA ($NN,X)
-            // Store Accumulator Indexed Indirect
-            Un(state);
             break;
         case 0x84:
-            // STY $NN
-            // Store Y Register Zero Page
-            Un(state);
             break;
         case 0x85:
-            // STA $NN
-            // Store Accumulator Zero Page
-            Un(state);
             break;
         case 0x86:
-            // STX $NN
-            // Store X Register Zero Page
-            Un(state);
             break;
         case 0x88:
             Un(state);
