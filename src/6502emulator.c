@@ -714,18 +714,18 @@ void Emulate6502(State6502* state) {
             break;
         case 0xd0:
             if(state->flags.Z != 0){
-				stack->pc += opcode[1];
+				state->pc += opcode[1];
 			}
             break;
         case 0xd1:
 			
-            if(state.a == state->stack[(opcode[1] + state->y)]){
+            if(state->a == state->stack[(opcode[1] + state->y)]){
 				state->flags.Z = 1;
 			}
-			if(state.a < state->stack[(opcode[1] + state->y)]) {
+			if(state->a < state->stack[(opcode[1] + state->y)]) {
 				state->flags.N = 1;
 			}
-			if(state.a >= state->stack[(opcode[1] + state->y)]) {
+			if(state->a >= state->stack[(opcode[1] + state->y)]) {
 				state->flags.C = 1;
 			}
 			
@@ -753,7 +753,7 @@ void Emulate6502(State6502* state) {
 			}
             break;
         case 0xd8:
-			state->flags.D = 0
+            state->flags.D = 0;
             break;
         case 0xd9:
              if(state->a <= state->stack[(opcode[2] << 8 | opcode[1])] + state->y){
@@ -813,7 +813,7 @@ void Emulate6502(State6502* state) {
 				state->flags.C = 0;
             break;
         case 0xe1:
-            state->a = state->a - state->stack[state->x + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->x + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -844,7 +844,7 @@ void Emulate6502(State6502* state) {
 				state->flags.C = 0;     
             break;
         case 0xe5:
-			state->a = state->a - state->stack[state->x + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->x + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -877,7 +877,7 @@ void Emulate6502(State6502* state) {
 			}
             break;
         case 0xe9:
-            state->a = state->a - state->stack[state->x + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->x + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -911,7 +911,7 @@ void Emulate6502(State6502* state) {
 				state->flags.C = 0; 
             break;
         case 0xed:
-            state->a = state->a - state->stack[state->a + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->a + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -936,11 +936,11 @@ void Emulate6502(State6502* state) {
             break;
         case 0xf0:
             if(state->flags.Z == 0){
-				stack->pc += opcode[1];
+				state->pc += opcode[1];
 			}
             break;
         case 0xf1:
-            state->a = state->a - state->stack[state->y + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->y + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -955,7 +955,7 @@ void Emulate6502(State6502* state) {
 			}
             break;
         case 0xf5:
-            state->a = state->a - state->stack[state->x + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->x + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -982,7 +982,7 @@ void Emulate6502(State6502* state) {
             state->flags.D = 1;
             break;
         case 0xf9:
-            state->a = state->a - state->stack[state->y + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->y + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
@@ -997,7 +997,7 @@ void Emulate6502(State6502* state) {
 			}
             break;
         case 0xfd:
-            state->a = state->a - state->stack[state->x + opcode[1]] - (1-state->flags.C)
+            state->a = state->a - state->stack[state->x + opcode[1]] - (1 - state->flags.C);
 			if(state->a < 0){
 				state->flags.N = 1;
 			}
