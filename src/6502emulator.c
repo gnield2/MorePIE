@@ -123,7 +123,13 @@ void Emulate6502(State6502* state) {
         case 0x40:
             // RTI
             // Implied
-            Un(state);
+            state->flags.C = state->stack[state->sp] & 0x01;
+            state->flags.Z = (state->stack[state->sp] & 0x02) >> 1;
+            state->flags.I = (state->stack[state->sp] & 0x04) >> 2;
+            state->flags.D = (state->stack[state->sp] & 0x08) >> 3;
+            state->flags.B = (state->stack[state->sp] & 0x10) >> 4;
+            state->flags.V = (state->stack[state->sp] & 0x40) >> 6;
+            state->flags.N = (state->stack[state->sp] & 0x80) >> 7;
             break;
         case 0x41:
             // EOR ($NN,X)
@@ -142,7 +148,7 @@ void Emulate6502(State6502* state) {
         case 0x46:
             // LSR $NN
             // Logical Shift Right Zero Page
-            state->flags.C = state[stack[opcode[1] & 0x01]];
+            state->flags.C = state->stack[state->stack[opcode[1] & 0x01]];
             state->stack[opcode[1]] = state->stack[opcode[1]] >> 1;
             state->flags.Z = 1 ? state->stack[opcode[1]] == 0 : 0;
             state->flags.N = 1 ? state->stack[opcode[1]] >> 7 == 1 : 0;
@@ -165,7 +171,6 @@ void Emulate6502(State6502* state) {
             state->stack[opcode[1]] = state->a >> 1;
             state->flags.Z = 1 ? state->a == 0 : 0;
             state->flags.N = 1 ? state->a >> 7 == 1 : 0;
-            Un(state);
             break;
         case 0x4c:
             // JMP $NNNN
@@ -244,7 +249,7 @@ void Emulate6502(State6502* state) {
         case 0x60:
             // RTS
             // Return from Subroutine
-            Un(state);
+            state->pc = state->stack[state->sp] - 1;
             break;
         case 0x61:
             // ADC ($NN,X)
@@ -314,7 +319,7 @@ void Emulate6502(State6502* state) {
         case 0x70:
             // BVS $NN
             // Branch if Overflow Set
-            state->pc = state->pc + int8_t(opcode[1]) ? state->flags.V == 1 : state->pc;
+            state->pc += (int8_t)opcode[1] ? state->flags.V == 1 : state->pc;
             break;
         case 0x71:
             // ADC ($NN),Y
@@ -362,7 +367,7 @@ void Emulate6502(State6502* state) {
             // ROR $NNNN
             // Rotate Right Absolute
             temp = state->stack[opcode[2] << 8 | opcode[1]];
-            state->stack[opcode[2] << 8 | opcode[1]] = state->stack[opcode[2] << 8 | opcode[1}] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->stack[opcode[2] << 8 | opcode[1]] = state->stack[opcode[2] << 8 | opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
             state->flags.C = temp & 0x01;
             break;
         case 0x81:
