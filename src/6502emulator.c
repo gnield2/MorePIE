@@ -8,6 +8,7 @@ void Un(State6502* state) {
 void Emulate6502(State6502* state) {
     // get the opcode
     unsigned char *opcode = &state->stack[state->pc];
+    uint8_t temp;
 
     // implement all cases here
     switch(*opcode) {
@@ -237,112 +238,254 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x40:
-            
+            // RTI
+            // Implied
+            state->flags.C = state->stack[state->sp] & 0x01;
+            state->flags.Z = (state->stack[state->sp] & 0x02) >> 1;
+            state->flags.I = (state->stack[state->sp] & 0x04) >> 2;
+            state->flags.D = (state->stack[state->sp] & 0x08) >> 3;
+            state->flags.B = (state->stack[state->sp] & 0x10) >> 4;
+            state->flags.V = (state->stack[state->sp] & 0x40) >> 6;
+            state->flags.N = (state->stack[state->sp] & 0x80) >> 7;
             break;
         case 0x41:
-            Un(state);
+            // EOR ($NN,X)
+            // Exclusive OR Indexed Indirect X
+            state->a = state->a ^ state->stack[0xFF & (state->x + opcode[1])];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x45:
-            Un(state);
+            // EOR $NN
+            // Exclusive OR Zero Page
+            state->a = state->a ^ state->stack[opcode[1]];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x46:
-            Un(state);
+            // LSR $NN
+            // Logical Shift Right Zero Page
+            state->flags.C = state->stack[state->stack[opcode[1] & 0x01]];
+            state->stack[opcode[1]] = state->stack[opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[1]] == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x48:
-            Un(state);
+            // PHA
+            // Push Accumulator
+            state->stack[state->sp] = state->a;
+            state->sp++;
             break;
         case 0x49:
-            Un(state);
+            // EOR #$NN
+            // Exclusive OR Immediate
+            state->a = state->a ^ opcode[1];
             break;
         case 0x4a:
-            Un(state);
+            // LSR A
+            // Logical Shift Right Accumulator
+            state->flags.C = state->a & 0x01;
+            state->stack[opcode[1]] = state->a >> 1;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a >> 7 == 1 : 0;
             break;
         case 0x4c:
-            Un(state);
+            // JMP $NNNN
+            // Jump Absolute
+            state->pc = opcode[2] << 8 | opcode[1];
             break;
         case 0x4d:
-            Un(state);
+            // EOR $NNNN
+            // Exclusive OR Absolute
+            state->a = state->a ^ state->stack[opcode[2]<<8 | opcode[1]];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x4e:
-            Un(state);
+            // LSR $NNNN
+            // Logical Shift Right Absolute
+            state->stack[opcode[2]<<8 | opcode[1]] = state->stack[opcode[2]<<8 | opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1]]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x50:
-            Un(state);
+            // BVC $NN
+            // Branch if Overflow Clear
+            if (opcode[1]>>7 == 1)
+                state->pc = state->pc - (opcode[1] & 0xEF) ? state->flags.V == 0 : state->pc;
+            else
+                state->pc = state->pc + opcode[1] ? state->flags.V == 0 : state->pc;
             break;
         case 0x51:
-            Un(state);
+            // EOR ($NN),Y
+            // Exclusive OR Indirect Indexed
+            state->a = state->a ^ state->stack[state->stack[opcode[1]] | (state->stack[opcode[1] + 1] << 8) + state->y];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x55:
-            Un(state);
+            // EOR $NN,X
+            // Exclusive OR Zero Page X
+            state->a = state->a ^ state->stack[opcode[1] + state->x];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x56:
-            Un(state);
+            // LSR $NN,X
+            // Logical Shift Right Zero Page X
+            state->stack[opcode[2]<<8 | opcode[1]] = state->stack[opcode[2]<<8 | opcode[1]] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1]]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x58:
-            Un(state);
+            // CLI
+            // Clear interrupt disable flag
+            state->flags.I = 0;
             break;
         case 0x59:
-            Un(state);
+            // EOR $NNNN,Y
+            // Exclusive OR Absolute Y
+            state->a = state->a ^ state->stack[(opcode[2]<<8 | opcode[1]) + state->y];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x5d:
-            Un(state);
+            // EOR $NNNN,X
+            // Exclusive OR Absolute X 
+            state->a = state->a ^ state->stack[(opcode[2]<<8 | opcode[1]) + state->x];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x5e:
-            Un(state);
+            // LSR $NNNN,X
+            // Logical Shift Right Absolute X
+            state->stack[opcode[2]<<8 | opcode[1] + state->x] = state->stack[opcode[2]<<8 | opcode[1] + state->x] >> 1;
+            state->flags.Z = 1 ? state->stack[opcode[2]<<8 | opcode[1] + state->x]  == 0 : 0;
+            state->flags.N = 1 ? state->stack[opcode[2]<<8 | opcode[1] + state->x] >> 7 == 1 : 0;
             break;
         case 0x60:
-            Un(state);
+            // RTS
+            // Return from Subroutine
+            state->pc = state->stack[state->sp] - 1;
             break;
         case 0x61:
+            // ADC ($NN,X)
+            // Add with Carry Indexed Indirect
             Un(state);
             break;
         case 0x65:
+            // ADC $NN
+            // Add with Carry Zero Page
             Un(state);
             break;
         case 0x66:
-            Un(state);
+            // ROR $NN
+            // Rotate Right Zero Page
+            temp = state->stack[opcode[1]];
+            state->stack[opcode[1]] = state->stack[opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x68:
-            Un(state);
+            // PLA
+            // Pull Accumulator
+            state->a = state->stack[state->sp];
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x69:
-            Un(state);
+            // ADC #$NN
+            // Add with Carry Immediate
+            temp = state->a;
+            state->a = state->a + opcode[1] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x6a:
-            Un(state);
+            // ROR A
+            // Rotate Right Accumulator
+            temp = state->a;
+            state->a = state->a >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
+            state->flags.N = 1 ? state->a>>7 == 1 : 0;
             break;
         case 0x6c:
-            Un(state);
+            // JMP $NN
+            // Jump indirect
+            state->pc = state->stack[(opcode[1] + 1) << 8 | opcode[1]];
             break;
         case 0x6d:
-            Un(state);
+            // ADC $NNNN
+            // Add with Carry Absolute
+            temp = state->a;
+            state->a = state->a + state->stack[opcode[2] << 8 | opcode[1]] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x6e:
-            Un(state);
+            // ROR $NNNN,X
+            // Rotate Right Absolute,X
+            temp = state->stack[opcode[2] << 8 | opcode[1] + state->x];
+            state->stack[opcode[2] << 8 | opcode[1] + state->x] = state->stack[opcode[2] << 8 | opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
+            state->flags.N = 1 ? state->stack[opcode[2] << 8 | opcode[1]] >> 7 == 1 : 0;
             break;
         case 0x70:
-            Un(state);
+            // BVS $NN
+            // Branch if Overflow Set
+            state->pc += (int8_t)opcode[1] ? state->flags.V == 1 : state->pc;
             break;
         case 0x71:
-            Un(state);
+            // ADC ($NN),Y
+            // Add with Carry Indirect Indexed
+            temp = state->a;
+            state->a = state->a + state->stack[state->stack[opcode[1]] | (state->stack[opcode[1] + 1] << 8) + state->y] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x75:
-            Un(state);
+            // ADC $NN,X
+            // Add with Carry Zero Page,X
+            temp = state->a;
+            state->a = state->a + state->stack[opcode[2]<<8 | opcode[1]] + (state->flags.C << 7);
+            //state->flags.C = 1 ? temp > state->a : 0;
+            state->flags.Z = 1 ? state->a == 0 : 0;
+            //state->flags.V = 1 ? temp > state->a : 0;
+            state->flags.N = 1 ? state->a & 0x80 : 0;
             break;
         case 0x76:
-            Un(state);
+            // ROR $NN,X
+            // Rotate Right Zero Page,X
+            temp = state->stack[opcode[1] + state->x];
+            state->stack[opcode[1] + state->x] = state->stack[opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x78:
-            Un(state);
+            // SEI
+            // Set Interrupt Disable
+            state->flags.I = 1;
             break;
         case 0x79:
+            // ADC $NNNN,Y
+            // Add with Carry Absolute,Y
             Un(state);
             break;
         case 0x7d:
+            // ADC $NNNN,X
+            // Add with Carry Absolute,X
             Un(state);
             break;
         case 0x7e:
-            Un(state);
+            // ROR $NNNN
+            // Rotate Right Absolute
+            temp = state->stack[opcode[2] << 8 | opcode[1]];
+            state->stack[opcode[2] << 8 | opcode[1]] = state->stack[opcode[2] << 8 | opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
+            state->flags.C = temp & 0x01;
             break;
         case 0x81:
             state->stack[(opcode[1] + state->x) & 0xFF] = state->a;
