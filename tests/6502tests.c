@@ -1,5 +1,21 @@
 #include "../include/6502tests.h"
 
+void default_state(State6502* state) {
+    state->pc = 0x0000;
+    state->sp = 0xFF;
+    state->a  = 0x00;
+    state->x  = 0x00;
+    state->y  = 0x00;
+    state->flags.C = 0;
+    state->flags.Z = 1;
+    state->flags.I = 1;
+    state->flags.D = 0;
+    state->flags.B = 1;
+    state->flags.V = 0;
+    state->flags.N = 0;
+    state->stack = calloc(0xFFFF, 1);
+}
+
 void print6502(FILE* stream, State6502* state, uint8_t stack) {
     fprintf(stream, "Registers\n");
     fprintf(stream, "PC: %04x\n", state->pc);
@@ -25,18 +41,6 @@ void print6502(FILE* stream, State6502* state, uint8_t stack) {
 
 int main() {
     State6502 state;
-    state.pc = 0x0000;
-    state.sp = 0xFF;
-    state.a  = 0x00;
-    state.x  = 0x00;
-    state.y  = 0x00;
-    state.flags.C = 0;
-    state.flags.Z = 1;
-    state.flags.I = 1;
-    state.flags.D = 0;
-    state.flags.B = 1;
-    state.flags.V = 0;
-    state.flags.N = 0;
-    state.stack = calloc(0xFFFF, 1);
+    default_state(&state);
     print6502(stdout, &state, 0);
 }
