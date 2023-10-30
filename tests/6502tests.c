@@ -14,6 +14,7 @@ void default_state(State6502* state) {
     state->flags.V = 0;
     state->flags.N = 0;
     state->stack = calloc(0xFFFF, 1);
+    memset(state->stack, 0, sizeof(state->stack));
 }
 
 void print6502(FILE* stream, State6502* state, uint8_t stack) {
