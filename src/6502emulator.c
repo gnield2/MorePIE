@@ -38,8 +38,8 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x08:
-            //&state->stack = &state->flags;
-            Un(state);
+            state->stack[stack->sp] = state->flags;
+            stack->pc++;
             break;
         case 0x09:
             if (state->a == 0)
@@ -72,7 +72,9 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x10:
-            Un(state);
+            if (state->flags.N == 0) {
+                state->pc += opcode[1];
+            }
             break;
         case 0x11:
             if (state->y == 0)
@@ -122,6 +124,9 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x20:
+            state->stack[state->pc] = state->pc + 1;
+            state->pc++;
+            state->pc = state->stack[(opcode[2] << 8 | opcode[1])];
             Un(state);
             break;
         case 0x21:
@@ -196,7 +201,9 @@ void Emulate6502(State6502* state) {
             state->flags.N = 1;
             break;
         case 0x30:
-            Un(state);
+            if (state->flags.N == 1) {
+                state->pc += opcode[1];
+            }
             break;
         case 0x31:
             if (state->y == 0)
