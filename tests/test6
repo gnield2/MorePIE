@@ -1,0 +1,4 @@
+LDA #$01
+STA $00
+LDX $00
+BRK

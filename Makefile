@@ -1,5 +1,5 @@
 CC=	gcc
-CFLAGS=	-g -Wall -std=gnu99
+CFLAGS=	-g -Wall -Wextra -std=gnu99
 
 TARGETS=	bin/6502disassembler bin/6502emulator bin/6502assembler
 
@@ -11,7 +11,7 @@ bin/6502emulator:	bin/6502emulator.o
 
 bin/6502disassembler:	bin/6502disassembler.o
 	$(CC) $(CFLAGS) -o $@ $<
-	rm bin/disassembler.o
+	rm bin/6502disassembler.o
 
 bin/6502assembler:	bin/6502assembler.o
 	$(CC) $(CFLAGS) -o $@ $<

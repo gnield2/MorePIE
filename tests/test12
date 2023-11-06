@@ -1,0 +1,3 @@
+LDA #$F0
+EOR #$0F
+BRK

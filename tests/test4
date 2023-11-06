@@ -1,0 +1,8 @@
+LDA #$44
+SEC
+SED
+CLI
+SEI
+CLD
+NOP
+BRK
