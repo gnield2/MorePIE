@@ -1,0 +1,4 @@
+LDA #$81
+STA $00
+LSR $00
+BRK

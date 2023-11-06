@@ -1,0 +1,7 @@
+LDA #$01
+TAX
+TAY
+LDY #$02
+TYA
+TXA
+BRK

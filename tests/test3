@@ -1,0 +1,9 @@
+LDA #$11
+STA $06
+LDX #$01
+LDA #$8a
+LDA $05,X
+LDA #$8a
+LDA $06
+LDY #$33
+BRK

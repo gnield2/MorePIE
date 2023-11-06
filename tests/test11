@@ -1,0 +1,8 @@
+LDA #$01
+PHA
+SEC
+SED
+SEI
+LDA #$aa
+PLA
+BRK
