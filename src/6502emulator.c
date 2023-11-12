@@ -127,6 +127,7 @@ void PLA(State6502* state) {
 }
 
 void PLP(State6502* state) {
+    state->sp++;
     uint8_t flagstate = state->memory[0x1FF & state->sp];
     state->flags.N = (flagstate >> 7) & 1;
     state->flags.V = (flagstate >> 6) & 1;
@@ -160,6 +161,7 @@ void ORA(State6502* state, uint8_t value) {
 
 void BIT(State6502* state, uint8_t value) {
     uint8_t temp = state->a & value;
+    state->flags.Z = 1 ? temp : 0;
     state->flags.N = (value >> 7) & 1;
     state->flags.V = (value >> 6) & 1;
     state->pc++;
@@ -193,6 +195,109 @@ void LSR(State6502* state, uint16_t loc, uint8_t A) {
         state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
     }
 }
+
+void ROL(State6502* state, uint16_t loc, uint8_t A) {
+    if (A) {
+        uint8_t old_carry = state->flags.C;
+        state->flags.C = state->a >> 7;
+        state->a = state->a << 1;
+        state->a = state->a | old_carry;
+        state->flags.Z = 1 ? (state->a == 0) : 0;
+        state->flags.N = state->a >> 7;
+    } else {
+        state->pc++;
+        uint8_t old_carry = state->flags.C;
+        state->flags.C = state->memory[loc] >> 7;
+        state->memory[loc] = state->memory[loc] << 1;
+        state->memory[loc] = state->memory[loc] | old_carry;
+        state->flags.Z = 1 ? (state->a == 0) : 0;
+        state->flags.N = state->memory[loc] >> 7;
+    }
+}
+
+void ROR(State6502* state, uint16_t loc, uint8_t A) {
+    if (A) {
+        uint8_t old_carry = state->flags.C << 7;
+        state->flags.C = state->a & 0x01;
+        state->a = state->a >> 1;
+        state->a = state->a | old_carry;
+        state->flags.Z = 1 ? (state->a == 0) : 0;
+        state->flags.N = state->a >> 7;
+    } else {
+        state->pc++;
+        uint8_t old_carry = state->flags.C << 7;
+        state->flags.C = state->memory[loc] & 0x01;
+        state->memory[loc] = state->memory[loc] >> 1;
+        state->memory[loc] = state->memory[loc] | old_carry;
+        state->flags.Z = 1 ? (state->a == 0) : 0;
+        state->flags.N = state->memory[loc] >> 7;
+    }
+}
+
+void INC(State6502* state, uint8_t loc) {
+    state->memory[loc]++;
+    state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
+    state->flags.N = state->memory[loc] >> 7;
+    state->pc++;
+}
+
+void DEC(State6502* state, uint8_t loc) {
+    state->memory[loc]--;
+    state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
+    state->flags.N = state->memory[loc] >> 7;
+    state->pc++;
+}
+
+void CMP(State6502* state, uint8_t value) {
+    uint8_t result = state->a - value;
+    state->flags.Z = 1 ? (result == 0) : 0;
+    state->flags.N = result >> 7;
+    state->flags.C = 1 ? (state->flags.N == 0) : 0;
+    state->pc++;
+}
+
+void CPX(State6502* state, uint8_t value) {
+    uint8_t result = state->x - value;
+    state->flags.Z = 1 ? (result == 0) : 0;
+    state->flags.N = result >> 7;
+    state->flags.C = 1 ? (state->flags.N == 0) : 0;
+    state->pc++;
+}
+
+void CPY(State6502* state, uint8_t value) {
+    uint8_t result = state->y - value;
+    state->flags.Z = 1 ? (result == 0) : 0;
+    state->flags.N = result >> 7;
+    state->flags.C = 1 ? (state->flags.N == 0) : 0;
+    state->pc++;
+}
+
+void ADC(State6502* state, uint8_t value) {
+    state->pc++;
+    uint8_t old_a = state->a;
+    uint16_t carry_sum = state->a + value + state->flags.C;
+    state->a = state->a + value + state->flags.C;
+    state->flags.Z = 1 ? (state->a == 0) : 0;
+    state->flags.N = state->a >> 7;
+    // https://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
+    state->flags.V = 1 ? (((old_a ^ state->a) & (value ^ state->a) & 0x80) != 0) : 0;
+    state->flags.C = 1 ? (carry_sum >> 8) : 0;
+}
+
+void SBC(State6502* state, uint8_t value) {
+    state->pc++;
+    uint8_t old_a = state->a;
+    uint8_t comp_value = ~value;
+    uint8_t not_C = 0 ? (state->flags.C) : 1;
+    uint16_t carry_dif = state->a + comp_value + not_C;
+    state->a = state->a + comp_value + not_C;
+    state->flags.Z = 1 ? (state->a == 0) : 0;
+    state->flags.N = state->a >> 7;
+    // https://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
+    state->flags.V = 1 ? (((old_a ^ state->a) & (comp_value ^ state->a) & 0x80) != 0) : 0;
+    state->flags.C = 1 ? (carry_dif >> 8) : 0;
+}
+
 
 // General Functions
 
@@ -265,8 +370,6 @@ int Emulate6502(State6502* state) {
     // Local variables
     uint8_t loc;
     uint8_t loc2;
-    // delete when done testing
-    uint16_t temp;
     
     // set memory values for functions
     if (state->pc < 0xFFFE) {
@@ -313,7 +416,7 @@ int Emulate6502(State6502* state) {
             ORA(state, zero_pageX(state, loc, 0)); break;
         case 0x16: // ASL $NN,X presumed good
             ASL(state, zero_pageX(state, loc, 1), 0); break;
-        case 0x18: // CLC
+        case 0x18: // CLC good
             state->flags.C = 0; break;
         case 0x19: // ORA $NNNN,Y presumed good
             ORA(state, absoluteY(state, loc, loc2, 0)); break;
@@ -333,43 +436,20 @@ int Emulate6502(State6502* state) {
             BIT(state, zero_page(state, loc, 0)); break;
         case 0x25: // AND $NN
             AND(state, zero_page(state, loc, 0)); break;
-        case 0x26: // ROL $NN
-            if (state->a == 0)
-            {
-                state->flags.Z = 1;
-            }
-            state->flags.N = 1;
-            break;
-        case 0x28: // PLP
-            state->flags.C = state->memory[state->sp] & 0x01;
-            state->flags.Z = (state->memory[state->sp] & 0x02) >> 1;
-            state->flags.I = (state->memory[state->sp] & 0x04) >> 2;
-            state->flags.D = (state->memory[state->sp] & 0x08) >> 3;
-            state->flags.B = (state->memory[state->sp] & 0x10) >> 4;
-            state->flags.V = (state->memory[state->sp] & 0x40) >> 6;
-            state->flags.N = (state->memory[state->sp] & 0x80) >> 7;
-            break;
+        case 0x26: // ROL $NN good
+            ROL(state, zero_page(state, loc, 1), 0); break;
+        case 0x28: // PLP good
+            PLP(state); break;
         case 0x29: // AND #$NN good
             AND(state, loc); break;
-        case 0x2a: // ROL A
-            if (state->a == 0)
-            {
-                state->flags.Z = 1;
-            }
-            state->flags.N = 1;
-            break;
+        case 0x2a: // ROL A good
+            ROL(state, loc, 1); break;
         case 0x2c: // BIT $NNNN presumed good
             BIT(state, absolute(state, loc, loc2, 0)); break;
         case 0x2d: // AND $NNNN presumed good
             AND(state, absolute(state, loc, loc2, 0)); break;
-        case 0x2e: // ROL $NNNN
-            state->flags.C = 1;
-            if (state->a == 0)
-            {
-                state->flags.Z = 1;
-            }
-            state->flags.N = 1;
-            break;
+        case 0x2e: // ROL $NNNN presumed good
+            ROL(state, absolute(state, loc, loc2, 1), 0); break;
         case 0x30: // BMI $NN
             if (state->flags.N == 1) {
                 state->pc += opcode[1];
@@ -379,26 +459,16 @@ int Emulate6502(State6502* state) {
             AND(state, indirect_indexed(state, loc, 0)); break;
         case 0x35: // AND $NN,X presumed good
             AND(state, zero_pageX(state, loc, 0)); break;
-        case 0x36: // ROL $NN,X
-            if (state->a == 0)
-            {
-                state->flags.Z = 1;
-            }
-            state->flags.N = 1;
-            break;
+        case 0x36: // ROL $NN,X presumed good
+            ROL(state, zero_pageX(state, loc, 1), 0); break;
         case 0x38: // SEC good
             state->flags.C = 1; break;
         case 0x39: // AND $NNNN,Y presumed good
             AND(state, absoluteY(state, loc, loc2, 0)); break;
         case 0x3d: // AND $NNNN,X presumed good
             AND(state, absoluteX(state, loc, loc2, 0)); break;
-        case 0x3e: // ROL $NN,X
-            if (state->x == 0)
-            {
-                state->flags.Z = 1;
-            }
-            state->flags.N = 1;
-            break;
+        case 0x3e: // ROL $NNNN,X presumed good
+            ROL(state, absoluteX(state, loc, loc2, 1), 0); break;
         case 0x40: // RTI
             state->flags.C = state->memory[state->sp] & 0x01;
             state->flags.Z = (state->memory[state->sp] & 0x02) >> 1;
@@ -452,82 +522,41 @@ int Emulate6502(State6502* state) {
             state->pc = state->memory[state->sp] - 1;
             break;
         case 0x61: // ADC ($NN,X)
-            Un(state); break;
+            ADC(state, indexed_indirect(state, loc, 0)); break;
         case 0x65: // ADC $NN
-            Un(state); break;
-        case 0x66: // ROR $NN
-            temp = state->memory[opcode[1]];
-            state->memory[opcode[1]] = state->memory[opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
-            state->flags.C = temp & 0x01;
-            break;
+            ADC(state, zero_page(state, loc, 0)); break;
+        case 0x66: // ROR $NN good
+            ROR(state, zero_page(state, loc, 1), 0); break;
         case 0x68: // PLA good
             PLA(state); break;
-        case 0x69: // ADC #$NN
-            temp = state->a;
-            state->a = state->a + opcode[1] + (state->flags.C << 7);
-            //state->flags.C = 1 ? temp > state->a : 0;
-            state->flags.Z = 1 ? state->a == 0 : 0;
-            //state->flags.V = 1 ? temp > state->a : 0;
-            state->flags.N = 1 ? state->a & 0x80 : 0;
-            break;
-        case 0x6a: // ROR A
-            temp = state->a;
-            state->a = state->a >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
-            state->flags.C = temp & 0x01;
-            state->flags.N = 1 ? state->a>>7 == 1 : 0;
-            break;
+        case 0x69: // ADC #$NN good
+            ADC(state, loc); break;
+        case 0x6a: // ROR A good
+            ROR(state, loc, 1); break;
         case 0x6c: // JMP $NN
             state->pc = state->memory[(opcode[1] + 1) << 8 | opcode[1]];
             break;
-        case 0x6d: // ADC $NNNN
-            temp = state->a;
-            state->a = state->a + state->memory[opcode[2] << 8 | opcode[1]] + (state->flags.C << 7);
-            //state->flags.C = 1 ? temp > state->a : 0;
-            state->flags.Z = 1 ? state->a == 0 : 0;
-            //state->flags.V = 1 ? temp > state->a : 0;
-            state->flags.N = 1 ? state->a & 0x80 : 0;
-            break;
-        case 0x6e: // ROR $NNNN,X
-            temp = state->memory[opcode[2] << 8 | opcode[1] + state->x];
-            state->memory[opcode[2] << 8 | opcode[1] + state->x] = state->memory[opcode[2] << 8 | opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
-            state->flags.C = temp & 0x01;
-            state->flags.N = 1 ? state->memory[opcode[2] << 8 | opcode[1]] >> 7 == 1 : 0;
-            break;
+        case 0x6d: // ADC $NNNN presumed good
+            ADC(state, absolute(state, loc, loc2, 0)); break;
+        case 0x6e: // ROR $NNNN,X presumed good
+            ROR(state, absoluteX(state, loc, loc2, 1), 0); break;
         case 0x70: // BVS $NN
             state->pc += (int8_t)opcode[1] ? state->flags.V == 1 : state->pc;
             break;
-        case 0x71: // ADC ($NN),Y
-            temp = state->a;
-            state->a = state->a + state->memory[state->memory[opcode[1]] | (state->memory[opcode[1] + 1] << 8) + state->y] + (state->flags.C << 7);
-            //state->flags.C = 1 ? temp > state->a : 0;
-            state->flags.Z = 1 ? state->a == 0 : 0;
-            //state->flags.V = 1 ? temp > state->a : 0;
-            state->flags.N = 1 ? state->a & 0x80 : 0;
-            break;
-        case 0x75: // ADC $NN,X
-            temp = state->a;
-            state->a = state->a + state->memory[opcode[2]<<8 | opcode[1]] + (state->flags.C << 7);
-            //state->flags.C = 1 ? temp > state->a : 0;
-            state->flags.Z = 1 ? state->a == 0 : 0;
-            //state->flags.V = 1 ? temp > state->a : 0;
-            state->flags.N = 1 ? state->a & 0x80 : 0;
-            break;
-        case 0x76: // ROR $NN,X
-            temp = state->memory[opcode[1] + state->x];
-            state->memory[opcode[1] + state->x] = state->memory[opcode[1] + state->x] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
-            state->flags.C = temp & 0x01;
-            break;
+        case 0x71: // ADC ($NN),Y presumed good
+            ADC(state, indirect_indexed(state, loc, 0)); break;
+        case 0x75: // ADC $NN,X presumed good
+            ADC(state, zero_pageX(state, loc, 0)); break;
+        case 0x76: // ROR $NN,X presumed good
+            ROR(state, zero_pageX(state, loc, 1), 0); break;
         case 0x78: // SEI good
             state->flags.I = 1; break;
-        case 0x79: // ADC $NNNN,Y
-            Un(state); break;
-        case 0x7d: // ADC $NNNN,X
-            Un(state); break;
-        case 0x7e: // ROR $NNNN
-            temp = state->memory[opcode[2] << 8 | opcode[1]];
-            state->memory[opcode[2] << 8 | opcode[1]] = state->memory[opcode[2] << 8 | opcode[1]] >> 1 ? state->flags.C == 0 : (state->a >> 1) | 0x80;
-            state->flags.C = temp & 0x01;
-            break;
+        case 0x79: // ADC $NNNN,Y presumed good
+            ADC(state, absoluteY(state, loc, loc2, 0)); break;
+        case 0x7d: // ADC $NNNN,X presumed good
+            ADC(state, absoluteX(state, loc, loc2, 0)); break;
+        case 0x7e: // ROR $NNNN preseumed good
+            ROR(state, absolute(state, loc, loc2, 1), 0); break;
         case 0x81: // STA ($NN,X) good
             STA(state, indexed_indirect(state, loc, 1)); break;
         case 0x84: // STY $NN good
@@ -536,12 +565,10 @@ int Emulate6502(State6502* state) {
             STA(state, zero_page(state, loc, 1)); break;
         case 0x86: // STX $NN good
             STX(state, zero_page(state, loc, 1)); break;
-        case 0x88: // DEY
+        case 0x88: // DEY good
             state->y--;
-            if (state->y == 0)
-                state->flags.Z = 1;
-            if ((state->y && (1 << 7)) != 0)
-                state->flags.N = 1;
+            state->flags.Z = 1 ? (state->y == 0) : 0;
+            state->flags.N = state->y >> 7;
             break;
         case 0x8a: // TXA good
             state->a = state->x;
@@ -577,7 +604,7 @@ int Emulate6502(State6502* state) {
         case 0x99: // STA $NNNN,Y good
             STA(state, absoluteY(state, loc, loc2, 1));
             break;
-        case 0x9a: // TXS
+        case 0x9a: // TXS good
             state->sp = state->x;
             break;
         case 0x9d: // STA $NNNN,X good
@@ -605,7 +632,7 @@ int Emulate6502(State6502* state) {
         case 0xaa: // TAX good
             state->x = state->a;
             state->flags.Z = 1 ? (state->x == 0) : 0;
-            state->flags.N = 1 ? ((state->x >> 7) & 1) : 0;
+            state->flags.N = state->x >> 7;
             break;
         case 0xac: // LDY $NNNN good
             LDY(state, absolute(state, loc, loc2, 0)); break;
@@ -629,12 +656,10 @@ int Emulate6502(State6502* state) {
             state->flags.V = 0; break;
         case 0xb9: // LDA $NNNN,Y good
             LDA(state, absoluteY(state, loc, loc2, 0)); break;
-        case 0xba: // TSX
+        case 0xba: // TSX good
             state->x = state->sp;
-            if (state->x == 0)
-                state->flags.Z = 1;
-            if ((state->x && (1 << 7)) != 0)
-                state->flags.N = 1;
+            state->flags.Z = 1 ? (state->x == 0) : 0;
+            state->flags.N = state->x >> 7;
             break;
         case 0xbc: // LDY $NNNN,X good
             LDY(state, absoluteX(state, loc, loc2, 0)); break;
@@ -642,458 +667,97 @@ int Emulate6502(State6502* state) {
             LDA(state, absoluteX(state, loc, loc2, 0)); break;
         case 0xbe: // LDX $NNNN,Y good
             LDX(state, absoluteY(state, loc, loc2, 0)); break;
-      case 0xc0: // CPY #$NN
-            if(state->y <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->y == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->y >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;
-            break;
-        case 0xc1: // CMP ($NN,X)
-			if(state->memory[(opcode[1] + state->x) & 0xFF] > state->a){
-				state->flags.N = 1;
-			}
-			
-			if(state->memory[(opcode[1] + state->x) & 0xFF] == state->a){
-				state->flags.Z = 1;
-			} 
-			
-			if(state->memory[(opcode[1] + state->x) & 0xFF] <= state->a){
-				state->flags.C = 1;
-			}           
-            break;
-        case 0xc4: // CPY $NN
-            if(state->y <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->y == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->y >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;            
-            break;
-        case 0xc5: // CMP $NN
-            if(state->a <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->a == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->a >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;
-            break;
-        case 0xc6: // DEC $NN
-            state->memory[opcode[1]]--;
-			if(state->memory[opcode[1]] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[opcode[1]] == 0){
-				state->flags.Z = 1;
-			}
-            break;
-        case 0xc8: // INY
+        case 0xc0: // CPY #$NN presumed good
+            CPY(state, loc); break; 
+        case 0xc1: // CMP ($NN,X) presumed good
+            CMP(state, indexed_indirect(state, loc, 0)); break;
+        case 0xc4: // CPY $NN presumed good
+            CPY(state, zero_page(state, loc, 0)); break;
+        case 0xc5: // CMP $NN presumed good
+            CMP(state, zero_page(state, loc, 0)); break;
+        case 0xc6: // DEC $NN good
+            DEC(state, zero_page(state, loc, 1)); break;
+        case 0xc8: // INY good
             state->y++;
-			if(state->y < 0){
-				state->flags.N = 1;
-			}
-			if(state->y == 0) {
-				state->flags.Z = 1;
-			}
+            state->flags.Z = 1 ? (state->y == 0) : 0;
+            state->flags.N = state->y >> 7;
             break;
-        case 0xc9: // CMP #$NN
-            if(state->a <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->a == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->a >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;
-            break;
-        case 0xca: // DEX
+        case 0xc9: // CMP #$NN good
+            CMP(state, loc); break;
+        case 0xca: // DEX good
             state->x--;
-			if(state->x < 0) {
-				state->flags.N = 1;
-			}
-			if(state->x == 0) {
-				state->flags.Z = 1;
-			}
-			
+            state->flags.Z = 1 ? (state->x == 0) : 0;
+            state->flags.N = state->x >> 7;
             break;
-        case 0xcc: // CPY $NNNN
-
-            if(state->y <= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->y == state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->y >= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;            
-            break;
-        case 0xcd: // CMP $NNNN
-            if(state->a <= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->a == state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->a >= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0; 
-            break;
-        case 0xce: // DEC $NNNN
-            state->memory[(opcode[2] << 8 | opcode[1])]--;
-			if(state->memory[(opcode[2] << 8 | opcode[1])] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[(opcode[2] << 8 | opcode[1])] == 0){
-				state->flags.Z = 1;
-			}
-            break;
+        case 0xcc: // CPY $NNNN presumed good
+            CPY(state, absolute(state, loc, loc2, 0)); break;
+        case 0xcd: // CMP $NNNN presumed good
+            CMP(state, absolute(state, loc, loc2, 0)); break;
+        case 0xce: // DEC $NNNN presumed good
+            DEC(state, absolute(state, loc, loc2, 1)); break;
         case 0xd0: // BNE $NN
             if(state->flags.Z != 0){
 				state->pc += opcode[1];
 			}
             break;
-        case 0xd1: // CMP ($NN),Y
-			
-            if(state->a == state->memory[(opcode[1] + state->y)]){
-				state->flags.Z = 1;
-			}
-			if(state->a < state->memory[(opcode[1] + state->y)]) {
-				state->flags.N = 1;
-			}
-			if(state->a >= state->memory[(opcode[1] + state->y)]) {
-				state->flags.C = 1;
-			}
-			
-            break;
-        case 0xd5: // CMP $NN,X
-            if(state->memory[(opcode[1] + state->x) & 0xFF] > state->a){
-				state->flags.N = 1;
-			}
-			
-			if(state->memory[(opcode[1] + state->x) & 0xFF] == state->a){
-				state->flags.Z = 1;
-			} 
-			
-			if(state->memory[(opcode[1] + state->x) & 0xFF] <= state->a){
-				state->flags.C = 1;
-			}        
-            break;
-        case 0xd6: // DEC $NN,X
-            state->memory[(opcode[1] + state->x) & 0xFF]--;
-			if(state->memory[(opcode[1] + state->x) & 0xFF] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[(opcode[1] + state->x) & 0xFF] == 0){
-				state->flags.Z = 1;
-			}
-            break;
+        case 0xd1: // CMP ($NN),Y presumed good
+	    CMP(state, indirect_indexed(state, loc, 0)); break;
+        case 0xd5: // CMP $NN,X presumed good
+            CMP(state, zero_pageX(state, loc, 0)); break;
+        case 0xd6: // DEC $NN,X presumed good
+            DEC(state, zero_pageX(state, loc, 1)); break;
         case 0xd8: // CLD good
             state->flags.D = 0; break;
-        case 0xd9: // CMP $NNNN,Y
-             if(state->a <= state->memory[(opcode[2] << 8 | opcode[1])] + state->y){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->a == state->memory[(opcode[2] << 8 | opcode[1])] + state->y){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->a >= state->memory[(opcode[2] << 8 | opcode[1])] + state->y){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0; 
-            break;
-        case 0xdd: // CMP $NNNN,X
-            if(state->a <= state->memory[(opcode[2] << 8 | opcode[1])] + state->x){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->a == state->memory[(opcode[2] << 8 | opcode[1])] + state->x){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->a >= state->memory[(opcode[2] << 8 | opcode[1])] + state->x){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0; 
-            break;
-        case 0xde: // DEC $NNNN,X
-            (state->memory[(opcode[2] << 8 | opcode[1]) +state->x ])--;
-			if((state->memory[(opcode[2] << 8 | opcode[1]) + state->x ]) < 0){
-				state->flags.N = 1;
-			}
-			if((state->memory[(opcode[2] << 8 | opcode[1]) + state->x ]) == 0){
-				state->flags.Z = 1;
-			}
-            break;
-        case 0xe0: // CPX #$NN
-            if(state->x <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->x == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->x >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;
-            break;
-        case 0xe1: // SBC ($NN,X)
-            state->a = state->a - state->memory[state->x + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xe4: // CPX $NN
-            if(state->x <= state->memory[opcode[1]]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->x == state->memory[opcode[1]]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->x >= state->memory[opcode[1]]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0;     
-            break;
-        case 0xe5: // SBC $NN
-            state->a = state->a - state->memory[state->x + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xe6: // INC $NN
-            state->memory[opcode[1]]++;
-			if(state->memory[opcode[1]] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[opcode[1]] == 0){
-				state->flags.Z = 1;
-			}
-            break;
-        case 0xe8: // INX
+        case 0xd9: // CMP $NNNN,Y presumed good
+            CMP(state, absoluteY(state, loc, loc2, 0)); break;
+        case 0xdd: // CMP $NNNN,X presumed good
+            CMP(state, absoluteX(state, loc, loc2, 0)); break;
+        case 0xde: // DEC $NNNN,X presumed good
+            DEC(state, absoluteX(state, loc, loc2, 1)); break;
+        case 0xe0: // CPX #$NN presumed good
+            CPX(state, loc); break;
+        case 0xe1: // SBC ($NN,X) presumed good
+            SBC(state, indexed_indirect(state, loc, 0)); break;
+        case 0xe4: // CPX $NN presumed good
+            CPX(state, zero_page(state, loc, 0)); break;
+        case 0xe5: // SBC $NN presumed good
+            SBC(state, zero_page(state, loc, 0)); break;
+        case 0xe6: // INC $NN good
+            INC(state, zero_page(state, loc, 1)); break;
+        case 0xe8: // INX good
             state->x++;
-			if(state->x < 0){
-				state->flags.N = 1;
-			}
-			if(state->x == 0) {
-				state->flags.Z = 1;
-			}
+            state->flags.Z = 1 ? (state->x == 0) : 0;
+            state->flags.N = state->x >> 7;
             break;
-        case 0xe9: // SBC #$NN
-            state->a = state->a - state->memory[state->x + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
+        case 0xe9: // SBC #$NN good
+            SBC(state, loc); break;
         case 0xea: // NOP good
             break;
-        case 0xec: // CPX $NNNN
-            if(state->x <= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.N = 1;
-			} else 
-				state->flags.N = 0;
-			
-			if(state->x == state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.Z = 1;
-			} else
-				state->flags.Z = 0;
-			
-			if(state->x >= state->memory[(opcode[2] << 8 | opcode[1])]){
-				state->flags.C = 1;
-			} else
-				state->flags.C = 0; 
-            break;
-        case 0xed: // SBC $NNNN
-            state->a = state->a - state->memory[state->a + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xee: // INC $NNNN
-            state->memory[(opcode[2] << 8 | opcode[1])]++;
-			if(state->memory[(opcode[2] << 8 | opcode[1])] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[(opcode[2] << 8 | opcode[1])] == 0){
-				state->flags.Z = 1;
-			}
-            break;
+        case 0xec: // CPX $NNNN presumed good
+            CPX(state, absolute(state, loc, loc2, 0)); break;
+        case 0xed: // SBC $NNNN presumed good
+            SBC(state, absolute(state, loc, loc2, 0)); break;
+        case 0xee: // INC $NNNN presumed good
+            INC(state, absolute(state, loc, loc2, 1)); break;
         case 0xf0: // BEQ $NN
             if(state->flags.Z == 0){
 				state->pc += opcode[1];
 			}
             break;
-        case 0xf1: // SBC ($NN),Y
-            state->a = state->a - state->memory[state->y + opcode[1]] - (1 - state->flags.C);
-			if(state->a < 0){
-				state->flags.N = 1;
-			}
-			/*if () {
-				state->flags.V = 1;
-			}
-			if(){
-				state->flags.C = 1;
-			}*/
-			if(state->a == 0){
-				state->flags.Z = 1;
-			}
-            break;
-        case 0xf5: // SBC $NN,X
-            state->a = state->a - state->memory[state->x + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xf6: // INC $NN,X
-            state->memory[(opcode[1] + state->x) & 0xFF]++;
-			if(state->memory[(opcode[1] + state->x) & 0xFF] < 0){
-				state->flags.N = 1;
-			}
-			if(state->memory[(opcode[1] + state->x) & 0xFF] == 0){
-				state->flags.Z = 1;
-			}
-            break;
+        case 0xf1: // SBC ($NN),Y presumed good
+            SBC(state, indirect_indexed(state, loc, 0)); break;
+        case 0xf5: // SBC $NN,X presumed good
+            SBC(state, zero_pageX(state, loc, 0)); break;
+        case 0xf6: // INC $NN,X presumed good
+            INC(state, zero_pageX(state, loc, 1)); break;
         case 0xf8: // SED good
             state->flags.D = 1; break;
-        case 0xf9: // SBC $NNNN,Y
-            state->a = state->a - state->memory[state->y + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xfd: // SBC $NNNN,X
-            state->a = state->a - state->memory[state->x + opcode[1]] - (1 - state->flags.C);
-            if (state->a < 0) {
-                state->flags.N = 1;
-            }
-            /*if () {
-                state->flags.V = 1;
-            }
-            if(){
-                state->flags.C = 1;
-            }*/
-            if (state->a == 0) {
-                state->flags.Z = 1;
-            }
-            break;
-        case 0xfe: // INC $NNNN,X
-            (state->memory[(opcode[2] << 8 | opcode[1]) +state->x ])++;
-			if((state->memory[(opcode[2] << 8 | opcode[1]) + state->x ]) < 0){
-				state->flags.N = 1;
-			}
-			if((state->memory[(opcode[2] << 8 | opcode[1]) + state->x ]) == 0){
-				state->flags.Z = 1;
-			}
-            break;
+        case 0xf9: // SBC $NNNN,Y presumed good
+            SBC(state, absoluteY(state, loc, loc2, 0)); break;
+        case 0xfd: // SBC $NNNN,X presumed good
+            SBC(state, absoluteX(state, loc, loc2, 0)); break;
+        case 0xfe: // INC $NNNN,X presumed good
+            INC(state, absoluteX(state, loc, loc2, 1)); break;
     }
     
     // increment program counter, also happens in funcs with more than one byte
@@ -1103,6 +767,12 @@ int Emulate6502(State6502* state) {
 }
 
 int main(int argc, char* argv[]) {
+
+    // Check for correct args
+    if (argc != 2) {
+        puts("Please provide exactly one file.");
+        exit(1);
+    }
 
     // Initialize state
     State6502 state;
@@ -1120,8 +790,6 @@ int main(int argc, char* argv[]) {
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
 
-    // Currently using 0x0600 as the start of ROM
-    // Doesn't affect testing in the slightest
     fread(&state.memory[0x0600], fsize, 1, f);
     fclose(f);
 

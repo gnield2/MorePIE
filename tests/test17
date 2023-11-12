@@ -1,0 +1,4 @@
+LDA $#02
+CMP $#03
+NOP
+BRK

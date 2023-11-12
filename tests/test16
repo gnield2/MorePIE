@@ -1,0 +1,4 @@
+LDA $#00
+STA $00
+DEC $00
+BRK
