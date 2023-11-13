@@ -37,6 +37,8 @@ uint16_t absoluteX(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store);
 uint16_t absoluteY(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store);
 uint16_t indexed_indirect(State6502* state, uint8_t loc, uint8_t store);
 uint16_t indirect_indexed(State6502* state, uint8_t loc, uint8_t store);
+uint16_t indirect(State6502* store, uint8_t loc);
+void relative(State6502* state, uint8_t mov);
 
 // Instruction Functions
 
@@ -65,7 +67,8 @@ void ASL(State6502* state, uint16_t loc, uint8_t A);
 void LSR(State6502* state, uint16_t loc, uint8_t A);
 void ROL(State6502* state, uint16_t loc, uint8_t A);
 void ROR(State6502* state, uint16_t loc, uint8_t A);
-void JMP(State6502* state, uint8_t value);
+void JSR(State6502* state, uint16_t loc);
+void RTS(State6502* state);
 
 // General Functions
 

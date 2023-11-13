@@ -61,6 +61,14 @@ uint16_t indirect_indexed(State6502* state, uint8_t loc, uint8_t store) {
     else return state->memory[retloc];
 }
 
+uint16_t indirect(State6502* state, uint8_t loc) {
+    return (state->memory[loc+1] << 8) | state->memory[loc];
+}
+
+void relative(State6502* state, uint8_t mov) {
+    state->pc += (int8_t) mov;
+}
+
 // Instruction Functions
 
 void LDA(State6502* state, uint16_t value) {
@@ -298,6 +306,16 @@ void SBC(State6502* state, uint8_t value) {
     state->flags.C = 1 ? (carry_dif >> 8) : 0;
 }
 
+void JSR(State6502* state, uint16_t loc) {
+    state->memory[state->sp] = state->pc - 1;
+    state->sp--;
+    state->pc = loc;
+}
+
+void RTS(State6502* state) {
+    state->pc = state->memory[state->sp] - 1;
+    state->sp++;
+}
 
 // General Functions
 
@@ -387,7 +405,7 @@ int Emulate6502(State6502* state) {
     // Simple cases are implemented in the case statement itself, all others call functions
     switch(*opcode) {
         case 0x00: // BRK good
-                   // Currently used as end of program, which is not how it's supposed to go
+                   // Currently used as end of program, which is maybe(?) how it's supposed to go
             state->flags.B = 1; return 1;
         case 0x01: // ORA ($NN,X) presumed good
             ORA(state, indexed_indirect(state, loc, 0)); break;
@@ -405,11 +423,8 @@ int Emulate6502(State6502* state) {
             ORA(state, absolute(state, loc, loc2, 0)); break;
         case 0x0e: // ASL $NNNN good
             ASL(state, absolute(state, loc, loc2, 1), 0); break;
-        case 0x10: // BPL $NN
-            if (state->flags.N == 0) {
-                state->pc += opcode[1];
-            }
-            break;
+        case 0x10: // BPL $NN presumed good
+            if (state->flags.N == 0) relative(state, loc); break;
         case 0x11: // ORA ($NN),Y presumed good
             ORA(state, indirect_indexed(state, loc, 0)); break;
         case 0x15: // ORA $NN,X presumed good
@@ -424,12 +439,8 @@ int Emulate6502(State6502* state) {
             ORA(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x1e: // ASL $NNNN,X presumed good
             ASL(state, absoluteX(state, loc, loc2, 1), 0); break;
-        case 0x20: // JSR $NNNN
-            state->memory[state->pc] = state->pc + 1;
-            state->pc++;
-            state->pc = state->memory[(opcode[2] << 8 | opcode[1])];
-            Un(state);
-            break;
+        case 0x20: // JSR $NNNN cheese
+            JSR(state, absolute(state, loc, loc2, 1)); break;
         case 0x21: // AND ($NN,X) presumed good
             AND(state, indexed_indirect(state, loc, 0)); break;
         case 0x24: // BIT $NN good
@@ -450,11 +461,8 @@ int Emulate6502(State6502* state) {
             AND(state, absolute(state, loc, loc2, 0)); break;
         case 0x2e: // ROL $NNNN presumed good
             ROL(state, absolute(state, loc, loc2, 1), 0); break;
-        case 0x30: // BMI $NN
-            if (state->flags.N == 1) {
-                state->pc += opcode[1];
-            }
-            break;
+        case 0x30: // BMI $NN presumed good
+            if (state->flags.N == 1) relative(state, loc); break;
         case 0x31: // AND ($NN),Y presumed good
             AND(state, indirect_indexed(state, loc, 0)); break;
         case 0x35: // AND $NN,X presumed good
@@ -469,7 +477,7 @@ int Emulate6502(State6502* state) {
             AND(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x3e: // ROL $NNNN,X presumed good
             ROL(state, absoluteX(state, loc, loc2, 1), 0); break;
-        case 0x40: // RTI
+        case 0x40: // RTI cheese
             state->flags.C = state->memory[state->sp] & 0x01;
             state->flags.Z = (state->memory[state->sp] & 0x02) >> 1;
             state->flags.I = (state->memory[state->sp] & 0x04) >> 2;
@@ -490,19 +498,14 @@ int Emulate6502(State6502* state) {
             EOR(state, loc); break;
         case 0x4a: // LSR A good
             LSR(state, zero_page(state, loc, 1), 1); break;
-        case 0x4c: // JMP $NNNN
-            state->pc = opcode[2] << 8 | opcode[1];
-            break;
+        case 0x4c: // JMP $NNNN good
+            state->pc = absolute(state, loc, loc2, 1); break;
         case 0x4d: // EOR $NNNN presumed good
             EOR(state, absolute(state, loc, loc2, 0)); break;
         case 0x4e: // LSR $NNNN presumed good
             LSR(state, absolute(state, loc, loc2, 1), 1); break;
-        case 0x50: // BVC $NN
-            if (opcode[1]>>7 == 1)
-                state->pc = state->pc - (opcode[1] & 0xEF) ? state->flags.V == 0 : state->pc;
-            else
-                state->pc = state->pc + opcode[1] ? state->flags.V == 0 : state->pc;
-            break;
+        case 0x50: // BVC $NN presumed good
+            if (state->flags.V == 0) relative(state, loc); break;
         case 0x51: // EOR ($NN),Y presumed good
             EOR(state, indirect_indexed(state, loc, 0)); break;
         case 0x55: // EOR $NN,X presumed good
@@ -518,10 +521,9 @@ int Emulate6502(State6502* state) {
             EOR(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x5e: // LSR $NNNN,X presumed good
             LSR(state, absoluteX(state, loc, loc2, 1), 1); break;
-        case 0x60: // RTS
-            state->pc = state->memory[state->sp] - 1;
-            break;
-        case 0x61: // ADC ($NN,X)
+        case 0x60: // RTS cheese
+            RTS(state); break;
+        case 0x61: // ADC ($NN,X) presumed good
             ADC(state, indexed_indirect(state, loc, 0)); break;
         case 0x65: // ADC $NN
             ADC(state, zero_page(state, loc, 0)); break;
@@ -533,16 +535,18 @@ int Emulate6502(State6502* state) {
             ADC(state, loc); break;
         case 0x6a: // ROR A good
             ROR(state, loc, 1); break;
-        case 0x6c: // JMP $NN
-            state->pc = state->memory[(opcode[1] + 1) << 8 | opcode[1]];
-            break;
+        case 0x6c: // JMP $NN good
+                   // This will not work with most implementations of the 6502, but does with NES.
+                   // Usually it takes a 2 byte address, but NES takes a 1 byte zero page address.
+                   // This is likely due to a hardware issue with the orignal 6502 that was resolved 
+                   // in later iterations of the chip.
+            state->pc = indirect(state, loc); break;
         case 0x6d: // ADC $NNNN presumed good
             ADC(state, absolute(state, loc, loc2, 0)); break;
         case 0x6e: // ROR $NNNN,X presumed good
             ROR(state, absoluteX(state, loc, loc2, 1), 0); break;
-        case 0x70: // BVS $NN
-            state->pc += (int8_t)opcode[1] ? state->flags.V == 1 : state->pc;
-            break;
+        case 0x70: // BVS $NN presumed good
+            if (state->flags.V == 1) relative(state, loc); break;
         case 0x71: // ADC ($NN),Y presumed good
             ADC(state, indirect_indexed(state, loc, 0)); break;
         case 0x75: // ADC $NN,X presumed good
@@ -581,10 +585,8 @@ int Emulate6502(State6502* state) {
             STA(state, absolute(state, loc, loc2, 1)); break;
         case 0x8e: // STX $NNNN good
             STX(state, absolute(state, loc, loc2, 1)); break;
-        case 0x90: // BCC $NN
-            if (state->flags.C == 0)
-                state->pc += opcode[1];
-            break;
+        case 0x90: // BCC $NN presumed good
+            if (state->flags.C == 0) relative(state, loc); break;
         case 0x91: // STA ($NN),Y
             state->memory[opcode[1] + state->y] = state->a;
             break;
@@ -640,10 +642,8 @@ int Emulate6502(State6502* state) {
             LDA(state, absolute(state, loc, loc2, 0)); break;
         case 0xae: // LDX $NNNN good
             LDX(state, absolute(state, loc, loc2, 0)); break;
-        case 0xb0: // BCS $NN
-            if (state->flags.C == 1)
-                state->pc += opcode[1];
-            break;
+        case 0xb0: // BCS $NN presumed good
+            if (state->flags.C == 1) relative(state, loc); break;
         case 0xb1: // LDA ($NN),Y good
             LDA(state, indirect_indexed(state, loc, 0)); break;
         case 0xb4: // LDY $NN,X good
@@ -695,11 +695,8 @@ int Emulate6502(State6502* state) {
             CMP(state, absolute(state, loc, loc2, 0)); break;
         case 0xce: // DEC $NNNN presumed good
             DEC(state, absolute(state, loc, loc2, 1)); break;
-        case 0xd0: // BNE $NN
-            if(state->flags.Z != 0){
-				state->pc += opcode[1];
-			}
-            break;
+        case 0xd0: // BNE $NN good
+            if (state->flags.Z == 0) relative(state, loc); break;
         case 0xd1: // CMP ($NN),Y presumed good
 	    CMP(state, indirect_indexed(state, loc, 0)); break;
         case 0xd5: // CMP $NN,X presumed good
@@ -739,11 +736,8 @@ int Emulate6502(State6502* state) {
             SBC(state, absolute(state, loc, loc2, 0)); break;
         case 0xee: // INC $NNNN presumed good
             INC(state, absolute(state, loc, loc2, 1)); break;
-        case 0xf0: // BEQ $NN
-            if(state->flags.Z == 0){
-				state->pc += opcode[1];
-			}
-            break;
+        case 0xf0: // BEQ $NN presumed good
+            if(state->flags.Z == 1) relative(state, loc); break;
         case 0xf1: // SBC ($NN),Y presumed good
             SBC(state, indirect_indexed(state, loc, 0)); break;
         case 0xf5: // SBC $NN,X presumed good

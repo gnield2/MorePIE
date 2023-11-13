@@ -1,0 +1,7 @@
+LDX #$08
+DEX
+STX $0200
+CPX #$03
+BNE $f8
+STX $0201
+BRK
