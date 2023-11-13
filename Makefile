@@ -1,5 +1,5 @@
 CC=	gcc
-CFLAGS=	-g -Wall -Wextra -std=gnu99
+CFLAGS=	-g -Wall -Wextra -Wno-misleading-indentation -std=gnu99
 
 TARGETS=	bin/6502disassembler bin/6502emulator bin/6502assembler
 

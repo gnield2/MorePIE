@@ -1,0 +1,5 @@
+LDA #$01
+JMP $0607
+LDA #$03
+NOP
+BRK

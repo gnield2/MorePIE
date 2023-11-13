@@ -63,6 +63,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "7d");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "79");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -88,6 +89,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "3d");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "39");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -168,6 +170,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "dd");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "d9");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -239,6 +242,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "5d");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "59");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -297,6 +301,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "bd");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "b9");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -378,6 +383,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "1d");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "19");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -453,6 +459,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "fd");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "f9");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);
@@ -482,6 +489,7 @@ char* assemble6502line(char* command, char* retstr) {
                     return absolute(retstr, address, command, "9d");
                 else if (address[6] == 'Y')
                     return absolute(retstr, address, command, "99");
+                // fall through
             default:
                 fprintf(stderr, "bad operand: %s, %d\n", nemonic, length);
                 exit(1);

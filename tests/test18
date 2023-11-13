@@ -1,0 +1,4 @@
+CLC
+LDA #$d0
+ADC #$d0
+BRK

@@ -495,8 +495,14 @@ int Disassemble6502p(unsigned char* buffer, int pc)
     return opbytes;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
+
+    // Check correct number of command line args
+    if (argc != 2) {
+        puts("Provide exactly 1 file.");
+        exit(1);
+    }
+
     FILE *f = fopen(argv[1], "r");
     if (f == NULL)
     {

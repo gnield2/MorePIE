@@ -1,0 +1,8 @@
+LDA #$06
+STA $01
+LDA #$09
+STA $00
+JMP $00
+LDA #$77
+NOP
+BRK
