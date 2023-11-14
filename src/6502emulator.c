@@ -66,7 +66,7 @@ uint16_t indirect(State6502* state, uint8_t loc) {
 }
 
 void relative(State6502* state, uint8_t mov) {
-    state->pc += (int8_t) mov;
+    state->pc = state->pc + (int8_t)mov + 1;
 }
 
 // Instruction Functions
@@ -108,8 +108,7 @@ void STY(State6502* state, uint16_t loc) {
 }
 
 void PHA(State6502* state) {
-    state->memory[0x01FF & state->sp] = state->a;
-    state->sp--;
+    state->memory[0x01FF & state->sp--] = state->a;
 }
 
 void PHP(State6502* state) {
@@ -122,21 +121,19 @@ void PHP(State6502* state) {
     flagstate = flagstate | (state->flags.Z << 1);
     flagstate = flagstate | state->flags.C;
     //printf("flagstate: %b\n", flagstate);
-    uint16_t target = 0x01FF & state->sp;
-    state->memory[target] = flagstate;
-    state->sp--;
+    state->memory[0x0100 | state->sp--] = flagstate;
 }
 
 void PLA(State6502* state) {
-    state->sp++;
-    state->a = state->memory[0x01FF & state->sp];
+    state->a = state->memory[0x0100 | ++state->sp];
+    state->memory[0x0100 | state->sp] = 0x00;
     state->flags.Z = 1 ? (state->a == 0) : 0;
     state->flags.N = 1 ? ((state->a >> 7) & 1) : 0;
 }
 
 void PLP(State6502* state) {
-    state->sp++;
-    uint8_t flagstate = state->memory[0x1FF & state->sp];
+    uint8_t flagstate = state->memory[0x0100 | ++state->sp];
+    state->memory[0x0100 | state->sp] = 0x00;
     state->flags.N = (flagstate >> 7) & 1;
     state->flags.V = (flagstate >> 6) & 1;
     state->flags.B = (flagstate >> 4) & 1;
@@ -307,14 +304,44 @@ void SBC(State6502* state, uint8_t value) {
 }
 
 void JSR(State6502* state, uint16_t loc) {
-    state->memory[state->sp] = state->pc - 1;
-    state->sp--;
-    state->pc = loc;
+    state->memory[0x0100 | state->sp--] = (state->pc + 1) >> 8;
+    state->memory[0x0100 | state->sp--] = (state->pc + 1) & 0x00FF;
+    state->pc = loc - 1;
 }
 
 void RTS(State6502* state) {
-    state->pc = state->memory[state->sp] - 1;
-    state->sp++;
+    state->pc = (state->memory[0x0100 | (state->sp + 2)] << 8) | (state->memory[0x0100 | (state->sp + 1)]);
+    state->memory[0x0100 | ++state->sp] = 0x00;
+    state->memory[0x0100 | ++state->sp] = 0x00;
+}
+
+void RTI(State6502* state) {
+    uint8_t flagstate = state->memory[0x0100 | ++state->sp];
+    state->memory[0x0100 | state->sp] = 0x00;
+    state->flags.N = (flagstate >> 7) & 1;
+    state->flags.V = (flagstate >> 6) & 1;
+    state->flags.B = 0;
+    state->flags.D = (flagstate >> 3) & 1;
+    state->flags.I = (flagstate >> 2) & 1;
+    state->flags.Z = (flagstate >> 1) & 1;
+    state->flags.C = flagstate & 1;
+    RTS(state);
+}
+
+void BRK(State6502* state) {
+    uint8_t flagstate = 0;
+    flagstate = flagstate | (state->flags.N << 7);
+    flagstate = flagstate | (state->flags.V << 6);
+    flagstate = flagstate | (1 << 4);
+    flagstate = flagstate | (state->flags.D << 3);
+    flagstate = flagstate | (1 << 2);
+    flagstate = flagstate | (state->flags.Z << 1);
+    flagstate = flagstate | state->flags.C;
+    state->memory[0x0100 | state->sp--] = flagstate;
+    state->flags.I = 1;
+    state->memory[0x0100 | state->sp--] = (state->pc + 2) >> 8;
+    state->memory[0x0100 | state->sp--] = (state->pc + 2) & 0x00FF;
+    state->pc = (state->memory[0xFFFF] << 8) | (state->memory[0xFFFE]);
 }
 
 // General Functions
@@ -404,9 +431,9 @@ int Emulate6502(State6502* state) {
     // Implement all cases here
     // Simple cases are implemented in the case statement itself, all others call functions
     switch(*opcode) {
-        case 0x00: // BRK good
+        case 0x00: // BRK probably good
                    // Currently used as end of program, which is maybe(?) how it's supposed to go
-            state->flags.B = 1; return 1;
+            BRK(state); return 1;
         case 0x01: // ORA ($NN,X) presumed good
             ORA(state, indexed_indirect(state, loc, 0)); break;
         case 0x05: // ORA $NN presumed good
@@ -439,7 +466,7 @@ int Emulate6502(State6502* state) {
             ORA(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x1e: // ASL $NNNN,X presumed good
             ASL(state, absoluteX(state, loc, loc2, 1), 0); break;
-        case 0x20: // JSR $NNNN cheese
+        case 0x20: // JSR $NNNN probably good
             JSR(state, absolute(state, loc, loc2, 1)); break;
         case 0x21: // AND ($NN,X) presumed good
             AND(state, indexed_indirect(state, loc, 0)); break;
@@ -477,15 +504,8 @@ int Emulate6502(State6502* state) {
             AND(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x3e: // ROL $NNNN,X presumed good
             ROL(state, absoluteX(state, loc, loc2, 1), 0); break;
-        case 0x40: // RTI cheese
-            state->flags.C = state->memory[state->sp] & 0x01;
-            state->flags.Z = (state->memory[state->sp] & 0x02) >> 1;
-            state->flags.I = (state->memory[state->sp] & 0x04) >> 2;
-            state->flags.D = (state->memory[state->sp] & 0x08) >> 3;
-            state->flags.B = (state->memory[state->sp] & 0x10) >> 4;
-            state->flags.V = (state->memory[state->sp] & 0x40) >> 6;
-            state->flags.N = (state->memory[state->sp] & 0x80) >> 7;
-            break;
+        case 0x40: // RTI probably good
+            RTI(state); break;
         case 0x41: // EOR ($NN,X) presumed good
             EOR(state, indexed_indirect(state, loc, 0)); break;
         case 0x45: // EOR $NN presumed good
@@ -521,7 +541,7 @@ int Emulate6502(State6502* state) {
             EOR(state, absoluteX(state, loc, loc2, 0)); break;
         case 0x5e: // LSR $NNNN,X presumed good
             LSR(state, absoluteX(state, loc, loc2, 1), 1); break;
-        case 0x60: // RTS cheese
+        case 0x60: // RTS probably good
             RTS(state); break;
         case 0x61: // ADC ($NN,X) presumed good
             ADC(state, indexed_indirect(state, loc, 0)); break;
@@ -754,9 +774,10 @@ int Emulate6502(State6502* state) {
             INC(state, absoluteX(state, loc, loc2, 1)); break;
     }
     
+    print6502(stdout, state, 0, 0, 0);
+    
     // increment program counter, also happens in funcs with more than one byte
     state->pc++;
-    print6502(stdout, state, 0, 0, 1);
     return 0;
 }
 
@@ -792,6 +813,8 @@ int main(int argc, char* argv[]) {
 
     while (finished == 0)
         finished = Emulate6502(&state);
+
+    Del_State6502(&state);
 
     return 0;
 }

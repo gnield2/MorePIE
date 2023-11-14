@@ -69,6 +69,7 @@ void ROL(State6502* state, uint16_t loc, uint8_t A);
 void ROR(State6502* state, uint16_t loc, uint8_t A);
 void JSR(State6502* state, uint16_t loc);
 void RTS(State6502* state);
+void BRK(State6502* state);
 
 // General Functions
 
