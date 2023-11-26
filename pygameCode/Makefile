@@ -1,2 +1,2 @@
 test:
-	python3 trial05.py
+	python3 trial06.py
