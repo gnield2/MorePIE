@@ -8,17 +8,18 @@ black = (0, 0, 0)
 
 def show_selectDir_screen(screen):
 	menu = pygame_menu.Menu('Choose Your ROMS Directory', width, height, theme=pygame_menu.themes.THEME_BLUE)
-	displayDirectories(screen, menu)
+	displayRoms(screen, menu)
 	menu.mainloop(screen)
 
-def displayDirectories(screen, menu):
+def displayRoms(screen, menu):
 	screen.fill(white)
 	menu.clear()
 	currdir = os.getcwd()
-	dirs = [d for d in os.listdir(currdir) if os.path.isdir(os.path.join(currdir, d))]
+	romsdir = f'{currdir}' + '/roms'
+	roms = [d for d in os.listdir(romsdir)]
 
-	for dir in dirs:
-		menu.add.button(dir, None, os.path.join(currdir, dir))
+	for rom in roms:
+		menu.add.button(rom, None, os.path.join(romsdir, rom))
 
 def window():
 
