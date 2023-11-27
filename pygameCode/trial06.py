@@ -1,6 +1,6 @@
 import pygame, pygame_menu
 pygame.init()
-game = pygame.image.load("../roms/Super_Mario_Bros._World.nes")
+game = pygame.image.load("../roms/snowflake.png")
 screen = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("Main Menu")
 screen.fill("purple")
