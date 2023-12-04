@@ -4,17 +4,17 @@
 
 uint8_t zero_page(State6502* state, uint8_t loc, uint8_t store) {
     if (store) return loc;
-    else return state->memory[loc];
+    else return state->bus->cpu_memory[loc];
 }
 
 uint8_t zero_pageX(State6502* state, uint8_t loc, uint8_t store) {
     if (store) return loc + state->x;
-    else return state->memory[loc + state->x];
+    else return state->bus->cpu_memory[loc + state->x];
 }
 
 uint8_t zero_pageY(State6502* state, uint8_t loc, uint8_t store) {
     if (store) return loc + state->y;
-    else return state->memory[loc + state->y];
+    else return state->bus->cpu_memory[loc + state->y];
 }
 
 uint16_t absolute(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
@@ -22,7 +22,7 @@ uint16_t absolute(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
     uint16_t retloc = loc2;
     retloc = (retloc << 8) | loc;
     if (store) return retloc;
-    else return state->memory[retloc];
+    else return state->bus->cpu_memory[retloc];
 }
 
 uint16_t absoluteX(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
@@ -30,7 +30,7 @@ uint16_t absoluteX(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
     uint16_t retloc = loc2;
     retloc = (retloc << 8) | loc;
     if (store) return retloc + state->x;
-    else return state->memory[retloc + state->x];
+    else return state->bus->cpu_memory[retloc + state->x];
 }
 
 uint16_t absoluteY(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
@@ -38,31 +38,31 @@ uint16_t absoluteY(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store) {
     uint16_t retloc = loc2;
     retloc = (retloc << 8) | loc;
     if (store) return retloc + state->y;
-    else return state->memory[retloc + state->y];
+    else return state->bus->cpu_memory[retloc + state->y];
 }
 
 uint16_t indexed_indirect(State6502* state, uint8_t loc, uint8_t store) {
     uint8_t target = 0xFF & (state->x + loc);
     //printf("target: %x\n", target);
-    //printf("target has: %x\n", state->memory[target]);
-    //printf("target + 1 has: %x\n", state->memory[target+1]);
-    uint16_t retloc = state->memory[target];
-    retloc = (state->memory[target + 1] << 8) | retloc;
+    //printf("target has: %x\n", state->bus->cpu_memory[target]);
+    //printf("target + 1 has: %x\n", state->bus->cpu_memory[target+1]);
+    uint16_t retloc = state->bus->cpu_memory[target];
+    retloc = (state->bus->cpu_memory[target + 1] << 8) | retloc;
     //printf("retloc: %x\n", retloc);
     if (store) return retloc;
-    else return state->memory[retloc];
+    else return state->bus->cpu_memory[retloc];
 }
 
 uint16_t indirect_indexed(State6502* state, uint8_t loc, uint8_t store) {
-    uint16_t retloc = state->memory[loc];
-    retloc = (state->memory[loc + 1] << 8) | retloc;
+    uint16_t retloc = state->bus->cpu_memory[loc];
+    retloc = (state->bus->cpu_memory[loc + 1] << 8) | retloc;
     retloc += state->y;
     if (store) return retloc;
-    else return state->memory[retloc];
+    else return state->bus->cpu_memory[retloc];
 }
 
 uint16_t indirect(State6502* state, uint8_t loc) {
-    return (state->memory[loc+1] << 8) | state->memory[loc];
+    return (state->bus->cpu_memory[loc+1] << 8) | state->bus->cpu_memory[loc];
 }
 
 void relative(State6502* state, uint8_t mov) {
@@ -93,22 +93,26 @@ void LDY(State6502* state, uint16_t value) {
 }
 
 void STA(State6502* state, uint16_t loc) {
-    state->memory[loc] = state->a;
+    //state->bus->cpu_memory[loc] = state->a;
+    cpu_mem_write(state->bus, loc, state->a);
     state->pc++;
 }
 
 void STX(State6502* state, uint16_t loc) {
-    state->memory[loc] = state->x;
+    //state->bus->cpu_memory[loc] = state->x;
+    cpu_mem_write(state->bus, loc, state->x);
     state->pc++;
 }
 
 void STY(State6502* state, uint16_t loc) {
-    state->memory[loc] = state->y;
+    //state->bus->cpu_memory[loc] = state->y;
+    cpu_mem_write(state->bus, loc, state->y);
     state->pc++;
 }
 
 void PHA(State6502* state) {
-    state->memory[0x01FF & state->sp--] = state->a;
+    //state->bus->cpu_memory[0x01FF & state->sp--] = state->a;
+    cpu_mem_write(state->bus, 0x01FF & state->sp--, state->a);
 }
 
 void PHP(State6502* state) {
@@ -121,19 +125,23 @@ void PHP(State6502* state) {
     flagstate = flagstate | (state->flags.Z << 1);
     flagstate = flagstate | state->flags.C;
     //printf("flagstate: %b\n", flagstate);
-    state->memory[0x0100 | state->sp--] = flagstate;
+    //state->bus->cpu_memory[0x0100 | state->sp--] = flagstate;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, flagstate);
+    
 }
 
 void PLA(State6502* state) {
-    state->a = state->memory[0x0100 | ++state->sp];
-    state->memory[0x0100 | state->sp] = 0x00;
+    state->a = state->bus->cpu_memory[0x0100 | ++state->sp];
+    //state->bus->cpu_memory[0x0100 | state->sp] = 0x00;
+    cpu_mem_write(state->bus, 0x01FF | state->sp, 0x00);
     state->flags.Z = 1 ? (state->a == 0) : 0;
     state->flags.N = 1 ? ((state->a >> 7) & 1) : 0;
 }
 
 void PLP(State6502* state) {
-    uint8_t flagstate = state->memory[0x0100 | ++state->sp];
-    state->memory[0x0100 | state->sp] = 0x00;
+    uint8_t flagstate = state->bus->cpu_memory[0x0100 | ++state->sp];
+    //state->bus->cpu_memory[0x0100 | state->sp] = 0x00;
+    cpu_mem_write(state->bus, 0x0100 | state->sp, 0x00);
     state->flags.N = (flagstate >> 7) & 1;
     state->flags.V = (flagstate >> 6) & 1;
     state->flags.B = (flagstate >> 4) & 1;
@@ -179,9 +187,10 @@ void ASL(State6502* state, uint16_t loc, uint8_t A) {
         state->flags.N = state->a >> 7;
     } else {
         state->pc++;
-        state->flags.C = state->memory[loc] >> 7;
-        state->memory[loc] = (state->memory[loc] << 1) & 0xFE;
-        state->flags.N = state->memory[loc] >> 7;
+        state->flags.C = state->bus->cpu_memory[loc] >> 7;
+        //state->bus->cpu_memory[loc] = (state->bus->cpu_memory[loc] << 1) & 0xFE;
+        cpu_mem_write(state->bus, loc, (state->bus->cpu_memory[loc] << 1) & 0xFE);
+        state->flags.N = state->bus->cpu_memory[loc] >> 7;
     }
     state->flags.Z = 1 ? (state->a == 0) : 0;
 }
@@ -194,10 +203,11 @@ void LSR(State6502* state, uint16_t loc, uint8_t A) {
         state->flags.Z = 1 ? (state->a == 0) : 0;
     } else {
         state->pc++;
-        state->flags.C = state->memory[loc] & 1;
-        state->memory[loc] = (state->memory[loc] >> 1) & 0x7F;
-        state->flags.N = state->memory[loc] >> 7;
-        state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
+        state->flags.C = state->bus->cpu_memory[loc] & 1;
+        //state->bus->cpu_memory[loc] = (state->bus->cpu_memory[loc] >> 1) & 0x7F;
+        cpu_mem_write(state->bus, loc, (state->bus->cpu_memory[loc] << 1) & 0x7F);
+        state->flags.N = state->bus->cpu_memory[loc] >> 7;
+        state->flags.Z = 1 ? (state->bus->cpu_memory[loc] == 0) : 0;
     }
 }
 
@@ -212,11 +222,13 @@ void ROL(State6502* state, uint16_t loc, uint8_t A) {
     } else {
         state->pc++;
         uint8_t old_carry = state->flags.C;
-        state->flags.C = state->memory[loc] >> 7;
-        state->memory[loc] = state->memory[loc] << 1;
-        state->memory[loc] = state->memory[loc] | old_carry;
+        state->flags.C = state->bus->cpu_memory[loc] >> 7;
+        //state->bus->cpu_memory[loc] = state->bus->cpu_memory[loc] << 1;
+        cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] << 1);
+        //state->bus->cpu_memory[loc] = state->bus->cpu_memory[loc] | old_carry;
+        cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] | old_carry);
         state->flags.Z = 1 ? (state->a == 0) : 0;
-        state->flags.N = state->memory[loc] >> 7;
+        state->flags.N = state->bus->cpu_memory[loc] >> 7;
     }
 }
 
@@ -231,25 +243,29 @@ void ROR(State6502* state, uint16_t loc, uint8_t A) {
     } else {
         state->pc++;
         uint8_t old_carry = state->flags.C << 7;
-        state->flags.C = state->memory[loc] & 0x01;
-        state->memory[loc] = state->memory[loc] >> 1;
-        state->memory[loc] = state->memory[loc] | old_carry;
+        state->flags.C = state->bus->cpu_memory[loc] & 0x01;
+        //state->bus->cpu_memory[loc] = state->bus->cpu_memory[loc] >> 1;
+        cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] >> 1);
+        //state->bus->cpu_memory[loc] = state->bus->cpu_memory[loc] | old_carry;
+        cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] | old_carry);
         state->flags.Z = 1 ? (state->a == 0) : 0;
-        state->flags.N = state->memory[loc] >> 7;
+        state->flags.N = state->bus->cpu_memory[loc] >> 7;
     }
 }
 
 void INC(State6502* state, uint8_t loc) {
-    state->memory[loc]++;
-    state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
-    state->flags.N = state->memory[loc] >> 7;
+    //state->bus->cpu_memory[loc]++;
+    cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] + 1);
+    state->flags.Z = 1 ? (state->bus->cpu_memory[loc] == 0) : 0;
+    state->flags.N = state->bus->cpu_memory[loc] >> 7;
     state->pc++;
 }
 
 void DEC(State6502* state, uint8_t loc) {
-    state->memory[loc]--;
-    state->flags.Z = 1 ? (state->memory[loc] == 0) : 0;
-    state->flags.N = state->memory[loc] >> 7;
+    //state->bus->cpu_memory[loc]--;
+    cpu_mem_write(state->bus, loc, state->bus->cpu_memory[loc] - 1);
+    state->flags.Z = 1 ? (state->bus->cpu_memory[loc] == 0) : 0;
+    state->flags.N = state->bus->cpu_memory[loc] >> 7;
     state->pc++;
 }
 
@@ -304,20 +320,25 @@ void SBC(State6502* state, uint8_t value) {
 }
 
 void JSR(State6502* state, uint16_t loc) {
-    state->memory[0x0100 | state->sp--] = (state->pc + 1) >> 8;
-    state->memory[0x0100 | state->sp--] = (state->pc + 1) & 0x00FF;
+    //state->bus->cpu_memory[0x0100 | state->sp--] = (state->pc + 1) >> 8;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, (state->pc + 1) >> 8);
+    //state->bus->cpu_memory[0x0100 | state->sp--] = (state->pc + 1) & 0x00FF;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, (state->pc + 1) & 0x00FF);
     state->pc = loc - 1;
 }
 
 void RTS(State6502* state) {
-    state->pc = (state->memory[0x0100 | (state->sp + 2)] << 8) | (state->memory[0x0100 | (state->sp + 1)]);
-    state->memory[0x0100 | ++state->sp] = 0x00;
-    state->memory[0x0100 | ++state->sp] = 0x00;
+    state->pc = (state->bus->cpu_memory[0x0100 | (state->sp + 2)] << 8) | (state->bus->cpu_memory[0x0100 | (state->sp + 1)]);
+    //state->bus->cpu_memory[0x0100 | ++state->sp] = 0x00;
+    cpu_mem_write(state->bus, 0x0100 | ++state->sp, 0x00);
+    //state->bus->cpu_memory[0x0100 | ++state->sp] = 0x00;
+    cpu_mem_write(state->bus, 0x0100 | ++state->sp, 0x00);
 }
 
 void RTI(State6502* state) {
-    uint8_t flagstate = state->memory[0x0100 | ++state->sp];
-    state->memory[0x0100 | state->sp] = 0x00;
+    uint8_t flagstate = state->bus->cpu_memory[0x0100 | ++state->sp];
+    //state->bus->cpu_memory[0x0100 | state->sp] = 0x00;
+    cpu_mem_write(state->bus, 0x0100 | state->sp, 0x00);
     state->flags.N = (flagstate >> 7) & 1;
     state->flags.V = (flagstate >> 6) & 1;
     state->flags.B = 0;
@@ -337,11 +358,14 @@ void BRK(State6502* state) {
     flagstate = flagstate | (1 << 2);
     flagstate = flagstate | (state->flags.Z << 1);
     flagstate = flagstate | state->flags.C;
-    state->memory[0x0100 | state->sp--] = flagstate;
+    //state->bus->cpu_memory[0x0100 | state->sp--] = flagstate;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, flagstate);
     state->flags.I = 1;
-    state->memory[0x0100 | state->sp--] = (state->pc + 2) >> 8;
-    state->memory[0x0100 | state->sp--] = (state->pc + 2) & 0x00FF;
-    state->pc = (state->memory[0xFFFF] << 8) | (state->memory[0xFFFE]);
+    //state->bus->cpu_memory[0x0100 | state->sp--] = (state->pc + 2) >> 8;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, (state->pc + 2) >> 8);
+    //state->bus->cpu_memory[0x0100 | state->sp--] = (state->pc + 2) & 0x00FF;
+    cpu_mem_write(state->bus, 0x0100 | state->sp--, (state->pc + 2) & 0x00FF);
+    state->pc = (state->bus->cpu_memory[0xFFFF] << 8) | (state->bus->cpu_memory[0xFFFE]);
 }
 
 // General Functions
@@ -363,19 +387,19 @@ void print6502(FILE* stream, State6502* state, uint8_t memory, uint8_t stack, ui
     fprintf(stream, "N : %u\n", state->flags.N);
     if (memory) {
         fprintf(stream, "\nMemory\n");
-        fprintf(stream, "0000: %02x\n", state->memory[0]);
+        fprintf(stream, "0000: %02x\n", state->bus->cpu_memory[0]);
         for (uint16_t i = 1; i > 0x0000; i++)
-            fprintf(stream, "%04x: %02x\n", i, state->memory[i]);
+            fprintf(stream, "%04x: %02x\n", i, state->bus->cpu_memory[i]);
     } else if (stack) {
         fprintf(stream, "\nZero Page and Stack\n");
-        fprintf(stream, "0000: %02x\n", state->memory[0]);
+        fprintf(stream, "0000: %02x\n", state->bus->cpu_memory[0]);
         for (uint16_t i = 1; i < 0x0200; i++)
-            fprintf(stream, "%04x: %02x\n", i, state->memory[i]);
+            fprintf(stream, "%04x: %02x\n", i, state->bus->cpu_memory[i]);
     } else if (sixteen) {
         fprintf(stream, "\nFirst Sixteen Addresses\n");
-        fprintf(stream, "0000: %02x\n", state->memory[0]);
+        fprintf(stream, "0000: %02x\n", state->bus->cpu_memory[0]);
         for (uint16_t i = 1; i < 0x0010; i++)
-            fprintf(stream, "%04x: %02x\n", i, state->memory[i]);
+            fprintf(stream, "%04x: %02x\n", i, state->bus->cpu_memory[i]);
     }
 }
 
@@ -398,19 +422,17 @@ void Init_State6502(State6502* state) {
     state->flags.B = 0;
     state->flags.V = 0;
     state->flags.N = 0;
-    state->memory = calloc(0xFFFF, 1);
-    if (state->memory == NULL)
-        exit(1);
+    state->bus = Init_Bus();
 }
 
 void Del_State6502(State6502* state) {
-    free(state->memory);
+    Del_Bus(state->bus);
 }
 
 int Emulate6502(State6502* state) {
 
     // Get the opcode
-    unsigned char *opcode = &state->memory[state->pc];
+    unsigned char *opcode = &state->bus->cpu_memory[state->pc];
 
     // Local variables
     uint8_t loc;
@@ -608,7 +630,7 @@ int Emulate6502(State6502* state) {
         case 0x90: // BCC $NN presumed good
             if (state->flags.C == 0) relative(state, loc); break;
         case 0x91: // STA ($NN),Y
-            state->memory[opcode[1] + state->y] = state->a;
+            state->bus->cpu_memory[opcode[1] + state->y] = state->a;
             break;
         case 0x94: // STY $NN,X good
             STY(state, zero_pageX(state, loc, 1)); break;
@@ -805,7 +827,7 @@ int main(int argc, char* argv[]) {
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
 
-    fread(&state.memory[0x0600], fsize, 1, f);
+    fread(&state.bus->cpu_memory[0x0600], fsize, 1, f);
     fclose(f);
 
     // Run emulator until BRK command called
