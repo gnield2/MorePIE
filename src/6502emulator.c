@@ -409,7 +409,8 @@ void Un(State6502* state) {
     exit(1);
 }
 
-void Init_State6502(State6502* state) {
+State6502* Init_State6502(Bus* bus) {
+    State6502* state = (State6502*)malloc(sizeof(State6502));
     state->pc = 0x0600;
     state->sp = 0xFF;
     state->a  = 0x00;
@@ -422,11 +423,12 @@ void Init_State6502(State6502* state) {
     state->flags.B = 0;
     state->flags.V = 0;
     state->flags.N = 0;
-    state->bus = Init_Bus();
+    state->bus = bus;
+    return state;
 }
 
 void Del_State6502(State6502* state) {
-    Del_Bus(state->bus);
+    free(state);
 }
 
 int Emulate6502(State6502* state) {
@@ -810,12 +812,17 @@ int main(int argc, char* argv[]) {
         puts("Please provide exactly one file.");
         exit(1);
     }
+    // Initialize rom by reading in file
+    Rom* rom = read_rom_file(argv[1]);
+
+    // Initialize bus
+    Bus* bus = Init_Bus(rom);
 
     // Initialize state
-    State6502 state;
-    Init_State6502(&state);
-   
-    // Read in ROM file to processor memory
+    State6502* state = Init_State6502(bus);
+
+    // Read in ROM file to CPU RAM
+    // Remove this after texting it works with rom
     FILE *f = fopen(argv[1], "r");
     if (f == NULL)
     {
@@ -827,16 +834,17 @@ int main(int argc, char* argv[]) {
     int fsize = ftell(f);
     fseek(f, 0L, SEEK_SET);
 
-    fread(&state.bus->cpu_memory[0x0600], fsize, 1, f);
+    fread(&state->bus->cpu_memory[0x0600], fsize, 1, f);
     fclose(f);
 
     // Run emulator until BRK command called
     int finished = 0;
 
     while (finished == 0)
-        finished = Emulate6502(&state);
+        finished = Emulate6502(state);
 
-    Del_State6502(&state);
+    Del_State6502(state);
+    Del_Bus(bus);
 
     return 0;
 }

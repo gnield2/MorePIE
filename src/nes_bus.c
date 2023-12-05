@@ -2,14 +2,14 @@
 
 #include "../include/nes_bus.h"
 
-Bus* Init_Bus() {
+Bus* Init_Bus(Rom* rom) {
     Bus* bus = (Bus*)malloc(sizeof(Bus));
     if (bus == NULL)
         exit(1);
     bus->cpu_memory = calloc(0x10000, 1);
     if (!bus->cpu_memory)
         exit(1);
-    bus->rom = Init_Rom();
+    bus->rom = rom;
     return bus;
 }
 

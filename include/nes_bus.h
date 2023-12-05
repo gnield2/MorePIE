@@ -14,6 +14,6 @@ typedef struct Bus {
 } Bus;
 
 // Function Headers
-Bus* Init_Bus();
+Bus* Init_Bus(Rom* rom);
 void Del_Bus(Bus* bus);
 void cpu_mem_write(Bus* bus, uint16_t loc, uint8_t value);

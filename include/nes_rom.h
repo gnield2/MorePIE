@@ -6,10 +6,17 @@
 #include <string.h>
 
 typedef enum Mirroring {
-    VERTICAL,
+    VERTICAL = 0,
     HORIZONTAL,
     FOUR_SCREEN
 } Mirroring;
+
+typedef enum INES {
+    ARCHAIC = 0,
+    ARCHAICORPOINT7,
+    ONE,
+    TWO
+} INES;
 
 typedef struct Rom {
     uint8_t *prg_rom;
@@ -18,7 +25,19 @@ typedef struct Rom {
     Mirroring screen_mirroring;
 } Rom;
 
+typedef struct NesFileHeader {
+    uint8_t prg_rom_size;
+    uint8_t chr_rom_size;
+    uint8_t prg_ram_size;
+    uint8_t rom_mapper_type;
+    Mirroring screen_mirroring;
+    uint8_t battery_backed_ram;
+    uint8_t trainer;
+    INES ines_type;
+} NesFileHeader;
+
 // Rom Funcs
 
-Rom* Init_Rom();
+Rom* Init_Rom(uint8_t prg_rom_size, uint8_t chr_rom_size, uint8_t mapper, Mirroring screen_mirroring);
 void Del_Rom(Rom* rom);
+Rom* read_rom_file(char* filename);

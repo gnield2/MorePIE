@@ -76,6 +76,6 @@ void BRK(State6502* state);
 
 void print6502(FILE* stream, State6502* state, uint8_t memory, uint8_t stack, uint8_t sixteen);
 void Un(State6502* state);
-void Init_State6502(State6502* state);
+State6502* Init_State6502(Bus* bus);
 void Del_State6502(State6502* state);
 int  Emulate6502(State6502* state);
