@@ -14,6 +14,8 @@ Rom* Init_Rom(uint16_t prg_rom_size, uint16_t chr_rom_size, uint8_t mapper, Mirr
         exit(1);
     rom->mapper = mapper;
     rom->screen_mirroring = screen_mirroring;
+    rom->prg_rom_size = prg_rom_size;
+    rom->chr_rom_size = chr_rom_size;
     return rom;
 }
 
@@ -87,14 +89,14 @@ Rom* read_rom_file(char* filename) {
     Rom* rom;
 
     // Read in 16 bytes at a time
-    char buffer[16];
+    unsigned char buffer[16];
     uint32_t loc = 0;
 
-    while (fgets(buffer, sizeof(buffer), f) != NULL) {
-        for (size_t i = 0; i < strlen(buffer); i++) {
+    while (fread((void*)buffer, 1, sizeof(buffer), f) != 0) {
+        /*for (size_t i = 0; i < strlen(buffer); i++) {
             printf("mem: %x\n", buffer[i]);
-        }
-        printf("loc: %x\n", loc);
+        }*/
+        //printf("loc: %x\n", loc);
         if (loc == 0) {
             if (buffer[0] != 0x4E || buffer[1] != 0x45 || buffer[2] != 0x53 || buffer[3] != 0x1A) {
                 fprintf(stderr, "Invalid File Type\n");
@@ -139,7 +141,7 @@ Rom* read_rom_file(char* filename) {
                 exit(1);
             }
 
-            printNesFileHeader(&header);
+            //printNesFileHeader(&header);
             rom = Init_Rom(header.prg_rom_size, header.chr_rom_size, header.rom_mapper_type, header.screen_mirroring);
         } else if ((loc < 513) && header.trainer == 1) {
             // in the trainer that can be ignored
@@ -147,14 +149,15 @@ Rom* read_rom_file(char* filename) {
         } else if ((loc >= header.prg_rom_start) && (loc < header.chr_rom_start)) {
             for (uint32_t i = 0; i < sizeof(buffer); ++i) {
                 uint32_t write = loc - header.prg_rom_start + i;
-                printf("write prg rom: %x\n", write);
                 rom->prg_rom[write] = buffer[i];
+                /*if (loc < 100)
+                    printf("write prg rom: %x %x\n", write, rom->prg_rom[write]);*/
             }
         } else {
             for (uint32_t i = 0; i < sizeof(buffer); ++i) {
                 uint32_t write = loc - header.chr_rom_start + i;
-                printf("write chr rom: %x\n", write);
-                rom->prg_rom[write] = buffer[i];
+                //printf("write chr rom: %x\n", write);
+                rom->chr_rom[write] = buffer[i];
             }
         }
 
