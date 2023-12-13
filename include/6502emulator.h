@@ -38,7 +38,7 @@ uint16_t absoluteX(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store);
 uint16_t absoluteY(State6502* state, uint8_t loc, uint8_t loc2, uint8_t store);
 uint16_t indexed_indirect(State6502* state, uint8_t loc, uint8_t store);
 uint16_t indirect_indexed(State6502* state, uint8_t loc, uint8_t store);
-uint16_t indirect(State6502* store, uint8_t loc);
+uint16_t indirect(State6502* state, uint8_t loc, uint8_t loc2);
 void relative(State6502* state, uint8_t mov);
 
 // Instruction Functions
@@ -62,8 +62,8 @@ void SBC(State6502* state, uint8_t value);
 void CMP(State6502* state, uint8_t value);
 void CPX(State6502* state, uint8_t value);
 void CPY(State6502* state, uint8_t value);
-void INC(State6502* state, uint8_t loc);
-void DEC(State6502* state, uint8_t loc);
+void INC(State6502* state, uint16_t loc);
+void DEC(State6502* state, uint16_t loc);
 void ASL(State6502* state, uint16_t loc, uint8_t A);
 void LSR(State6502* state, uint16_t loc, uint8_t A);
 void ROL(State6502* state, uint16_t loc, uint8_t A);
@@ -78,4 +78,5 @@ void print6502(FILE* stream, State6502* state, uint8_t memory, uint8_t stack, ui
 void Un(State6502* state);
 State6502* Init_State6502(Bus* bus);
 void Del_State6502(State6502* state);
+void printNES(FILE* stream, State6502* state);
 int  Emulate6502(State6502* state);

@@ -20,7 +20,9 @@ typedef enum INES {
 
 typedef struct Rom {
     uint8_t *prg_rom;
+    uint16_t prg_rom_size;
     uint8_t *chr_rom;
+    uint16_t chr_rom_size;
     uint8_t mapper;
     Mirroring screen_mirroring;
 } Rom;

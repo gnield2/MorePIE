@@ -6,7 +6,7 @@ Bus* Init_Bus(Rom* rom) {
     Bus* bus = (Bus*)malloc(sizeof(Bus));
     if (bus == NULL)
         exit(1);
-    bus->cpu_memory = calloc(0x1FFF, 1);
+    bus->cpu_memory = calloc(0x2000, 1);
     if (!bus->cpu_memory)
         exit(1);
     bus->rom = rom;
@@ -33,7 +33,16 @@ void mem_write(Bus* bus, uint16_t loc, uint8_t value) {
     }
 }
 
-void mem_read(Bus* bus, uint16_t loc) {
+uint8_t prg_rom_read(Bus* bus, uint16_t loc) {
+    return bus->rom->prg_rom[loc - 0xC000];
+}
+
+uint8_t mem_read(Bus* bus, uint16_t loc) {
+    //printf("sz: %lx\n", sizeof(bus->rom->prg_rom));
     if (loc <= 0x1FFF)
-        printf("in cpu ram\n");
+        return bus->cpu_memory[loc];
+    if (loc >= 0xC000 && loc < (bus->rom->prg_rom_size + 0xC000))
+        return bus->rom->prg_rom[loc - 0xC000];
+    else
+        return 0;
 }

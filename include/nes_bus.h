@@ -17,4 +17,5 @@ typedef struct Bus {
 Bus* Init_Bus(Rom* rom);
 void Del_Bus(Bus* bus);
 void mem_write(Bus* bus, uint16_t loc, uint8_t value);
-void mem_read(Bus* bus, uint16_t loc);
+uint8_t prg_rom_read(Bus* bus, uint16_t loc);
+uint8_t mem_read(Bus* bus, uint16_t loc);
