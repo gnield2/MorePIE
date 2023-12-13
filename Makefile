@@ -1,7 +1,8 @@
 CC=	gcc
 CFLAGS=	-g -Wall -Wextra -Wno-misleading-indentation -std=gnu99
+LDFLAGS= -fPIC -shared
 
-TARGETS=	bin/6502disassembler bin/6502emulator bin/6502assembler bin/rom_test
+TARGETS=	bin/6502disassembler bin/6502emulator bin/6502assembler bin/rom_test lib/libadd.so
 
 all:	$(TARGETS)
 
@@ -31,6 +32,9 @@ bin/6502disassembler.o:	src/6502disassembler.c
 
 bin/6502assembler.o:	src/6502assembler.c
 	$(CC) $(CFLAGS) -c -o $@ $^
+
+lib/libadd.so: src/6502emulator.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 clean:
 		rm $(TARGETS) bin/*.o

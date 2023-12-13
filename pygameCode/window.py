@@ -4,6 +4,14 @@ import sys
 import pygame
 import pygame_menu
 
+if ctypes.sizeof(ctypes.c_voidp) == 4:
+	lib = ctypes.CDLL('../lib/./libadd.so')
+else:
+	lib = ctypes.CDLL('../lib/./libadd.so')
+
+lib.main.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
+lib.main.restype = ctypes.c_int
+
 width, height = 1024, 600
 white = (255, 255, 255)
 black = (0, 0, 0)
@@ -12,6 +20,8 @@ def show_selectROM_screen(screen):
 	menu = pygame_menu.Menu('Choose Your ROM', width, height, theme=pygame_menu.themes.THEME_BLUE)
 	displayRoms(screen, menu)
 	menu.mainloop(screen)
+
+	selected = 0
 
 	for event in pygame.event.get():
 		if event.type == pygame.KEYDOWN:
@@ -31,8 +41,16 @@ def displayRoms(screen, menu):
 
 	for event in pygame.event.get():
 		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_UP:
+				selected = max(0, selected - 1)
+			if event.key == pygame.K_DOWN:
+				selected = min(len(roms) - 1, selected + 1)
 			if event.key == pygame.K_RETURN:
 				print("Opening ROM...\n")
+				filename = f'{romsdir}' + '/' + f'{roms[selected]}'
+				args = [b'program_name', filename.encode('utf-8')]
+				argc = len(args)
+				lib.main(argc, (ctypes.c_char_p * argc)(*args))
 			elif event.key == pygame.K_BACKSPACE:
 				print("Go back to home screen\n")
 		elif event.type == pygame.QUIT:
