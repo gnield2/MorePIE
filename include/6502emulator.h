@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include "nes_bus.h"
 
 // Structs
 
@@ -24,7 +25,7 @@ typedef struct State6502 {
     uint8_t  x;       // index register x
     uint8_t  y;       // index register y
     Flags    flags;   // flag struct
-    uint8_t  *memory; // memory
+    Bus*     bus;     // bus access for memory, ppu, etc
 } State6502;
 
 // Memory Functions
@@ -75,6 +76,6 @@ void BRK(State6502* state);
 
 void print6502(FILE* stream, State6502* state, uint8_t memory, uint8_t stack, uint8_t sixteen);
 void Un(State6502* state);
-void Init_State6502(State6502* state);
+State6502* Init_State6502(Bus* bus);
 void Del_State6502(State6502* state);
 int  Emulate6502(State6502* state);
