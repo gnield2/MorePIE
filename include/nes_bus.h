@@ -5,12 +5,15 @@
 #include <stdint.h>
 #include <string.h>
 #include "nes_rom.h"
+#include "nes_ppu.h"
 
 // Bus Struct
 
 typedef struct Bus {
     uint8_t *cpu_memory;
+    uint8_t *ppu_ram;
     Rom     *rom;
+    NesPPU  *ppu;
 } Bus;
 
 // Function Headers

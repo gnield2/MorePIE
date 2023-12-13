@@ -9,6 +9,9 @@ Bus* Init_Bus(Rom* rom) {
     bus->cpu_memory = calloc(0x2000, 1);
     if (!bus->cpu_memory)
         exit(1);
+    bus->ppu_ram = calloc(0x2000, 1);
+    if (!bus->ppu_ram)
+        exit(1);
     bus->rom = rom;
     return bus;
 }
@@ -41,7 +44,9 @@ uint8_t mem_read(Bus* bus, uint16_t loc) {
     //printf("sz: %lx\n", sizeof(bus->rom->prg_rom));
     if (loc <= 0x1FFF)
         return bus->cpu_memory[loc];
-    if (loc >= 0xC000 && loc < (bus->rom->prg_rom_size + 0xC000))
+    else if (loc > 0x1FFF && loc < 0x4000)
+        return bus->ppu_ram[loc - 0x2000];
+    else if (loc >= 0xC000 && loc < (bus->rom->prg_rom_size + 0xC000))
         return bus->rom->prg_rom[loc - 0xC000];
     else
         return 0;

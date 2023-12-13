@@ -853,6 +853,9 @@ int Emulate6502(State6502* state) {
             INC(state, absoluteX(state, loc, loc2, 1)); break;
         default:
             printf("undocumented opcode\n");
+            Del_State6502(state);
+            Del_Bus(state->bus);
+            exit(1);
     }
     
     //print6502(stdout, state, 0, 0, 0);
