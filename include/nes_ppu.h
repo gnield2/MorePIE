@@ -1,5 +1,8 @@
 // PPU
 
+#ifndef NES_PPU_H
+#define NES_PPU_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,8 +27,10 @@ typedef struct ControlReg {
 } ControlReg;
 
 typedef struct NesPPU {
-    uint8_t palett_table[32];
+    //Bus* bus;
+    uint8_t palette_table[32];
     uint8_t oam_data[256];
+    uint8_t data_buf;
     AddrReg addr_reg;
     ControlReg control_reg;
 } NesPPU;
@@ -40,3 +45,7 @@ uint16_t get_addr_reg(NesPPU* ppu);
 uint8_t increment_control_reg(NesPPU* ppu);
 void update_control_reg(NesPPU* ppu, uint8_t value);
 uint8_t control_reg_val(NesPPU* ppu);
+uint8_t ppu_mem_read(NesPPU* ppu);
+uint16_t ppu_mirroring(NesPPU* ppu, uint16_t loc);
+
+#endif

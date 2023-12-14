@@ -1,6 +1,6 @@
 #include "../include/nes_ppu.h"
 
-NesPPU* Init_NesPPU(Bus* bus) {
+NesPPU* Init_NesPPU() {
     NesPPU* ppu = (NesPPU*)malloc(sizeof(NesPPU));
     ppu->addr_reg.low = 0;
     ppu->addr_reg.high = 0;
@@ -61,4 +61,31 @@ uint8_t control_reg_val(NesPPU* ppu) {
     value |= (ppu->control_reg.master_slave_select     << 6) & 0x40;
     value |= (ppu->control_reg.generate_nmi            << 7) & 0x80;
     return value;
+}
+
+uint8_t ppu_mem_read(NesPPU* ppu) {
+    uint16_t loc = get_addr_reg(ppu);
+    increment_addr_reg(ppu);
+    if (loc < 0x2000) { // have to do the weird lag thing due to hardware constraints
+        uint8_t result = ppu->data_buf;
+        ppu->data_buf = ppu->bus->rom->chr_rom[loc];
+        return result;
+    } else if (loc < 0x3000) {
+        uint8_t result = ppu->data_buf;
+        //ppu->data_buf = ppu->bus->ppu_ram[ppu_mirroring(ppu, loc)];
+        return result;
+    } else if (loc < 0x3F00) {
+        fprintf(stderr, "Shouldn't be used.\n");
+        exit(1);
+    } else if (loc == 0x3F10 ||  loc == 0x3F14 || loc == 0x3F18 || loc == 0x3F1C) {
+        uint16_t mir = loc - 0x10;
+        return ppu->palette_table[mir - 0x3F00];
+    } else {
+        return ppu->palette_table[loc - 0x3F00];
+    }
+
+}
+
+uint16_t ppu_mirroring(NesPPU* ppu, uint16_t loc) {
+    return 0;
 }
